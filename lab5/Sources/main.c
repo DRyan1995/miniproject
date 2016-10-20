@@ -2,7 +2,7 @@
 #include <mc9s12dg256.h>
 #include <stdio.h>
 
-unsigned long risingEdge_prev, risingEdge_pres, downEdge, period;
+unsigned long risingEdge1, risingEdge2, downEdge, period;
 
 void init(){
   DDRA = 0xff;
@@ -14,11 +14,11 @@ void init(){
 
   TSCR1 = 0x90; /* enable timer counter, enable fast flag clear*/
   TIOS &= ~0x1; /* enable input-capture 0*/
-  TSCR2 = 0x05; /* disable TCNT overflow interrupt, set prescaler to 64 */
+  TSCR2 = 0x07; /* disable TCNT overflow interrupt, set prescaler to 64 */
 
   EnableInterrupts;
-  risingEdge_prev = 0;
-  risingEdge_pres = 0;
+  risingEdge1 = 0;
+  risingEdge2 = 0;
   downEdge = 0;
   period = 0;
 }
@@ -43,23 +43,21 @@ void main(void) {
     TCTL4 = 0x01; /* capture the rising edge of the PT0 pin */
     TFLG1 = 0x1;
     while (!(TFLG1 & 0x1)); /* wait for the first rising edge */
-    // risingEdge_prev = risingEdge_pres;
-    risingEdge_pres = TC0; /* save the first captured edge and clear C0F flag */
-    // if (risingEdge_pres <= risingEdge_prev) {
-    //   risingEdge_pres += 65536;
-    // }
-    // period = risingEdge_pres - risingEdge_prev;
+    risingEdge1 = TC0; /* save the first captured edge and clear C0F flag */
+
 
     TCTL4 = 0x02;  //caputre downEdge
     while (!(TFLG1 & 0x1)); /* wait for the second rising edge */
     downEdge = TC0;
-    // if(downEdge <= risingEdge_pres){
-    //   downEdge += 65536;
-    // }
-    myDis((downEdge - risingEdge_pres) * 100 / 1530);
 
-    for(i = 0; i < 1500000; i++){
-      TC0 = 0;
-    }
+    TCTL4 = 0x01;  //caputre downEdge
+    while (!(TFLG1 & 0x1)); /* wait for the second rising edge */
+    risingEdge2 = TC0;
+
+    myDis((downEdge - risingEdge_pres) * 100 / (risingEdge2 - risingEdge1));
+    // myDis((downEdge - risingEdge_pres) * 100 / (765)); //testing
+    // for(i = 0; i < 50000; i++){
+    //   TC0 = 0;
+    // }
   }
 }

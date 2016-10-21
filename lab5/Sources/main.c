@@ -14,7 +14,7 @@ void init(){
 
   TSCR1 = 0x90; /* enable timer counter, enable fast flag clear*/
   TIOS &= ~0x1; /* enable input-capture 0*/
-  TSCR2 = 0x07; /* disable TCNT overflow interrupt, set prescaler to 64 */
+  TSCR2 = 0x03; /* disable TCNT overflow interrupt, set prescaler to 64 */
 
   EnableInterrupts;
   risingEdge1 = 0;
@@ -54,10 +54,10 @@ void main(void) {
     while (!(TFLG1 & 0x1)); /* wait for the second rising edge */
     risingEdge2 = TC0;
 
-    myDis((downEdge - risingEdge_pres) * 100 / (risingEdge2 - risingEdge1));
+    myDis((downEdge - risingEdge1) * 100 / (risingEdge2 - risingEdge1));
     // myDis((downEdge - risingEdge_pres) * 100 / (765)); //testing
-    // for(i = 0; i < 50000; i++){
-    //   TC0 = 0;
-    // }
+    for(i = 0; i < 1000; i++){
+      TC0 = 0;
+    }
   }
 }

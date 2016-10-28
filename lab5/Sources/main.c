@@ -39,18 +39,16 @@ void main(void) {
 
   while (1) {
 
-
     TCTL4 = 0x01; /* capture the rising edge of the PT0 pin */
     TFLG1 = 0x1;
     while (!(TFLG1 & 0x1)); /* wait for the first rising edge */
     risingEdge1 = TC0; /* save the first captured edge and clear C0F flag */
 
-
     TCTL4 = 0x02;  //caputre downEdge
     while (!(TFLG1 & 0x1)); /* wait for the second rising edge */
     downEdge = TC0;
 
-    TCTL4 = 0x01;  //caputre downEdge
+    TCTL4 = 0x01;  //caputre risingEdge2
     while (!(TFLG1 & 0x1)); /* wait for the second rising edge */
     risingEdge2 = TC0;
 

@@ -2,8 +2,8 @@
 #include <mc9s12dg256.h>
 #include <stdio.h>
 
-#define DELAY_TIME_FAST 10000
-#define DELAY_TIME_SLOW 15000
+#define DELAY_TIME_FAST 300
+#define DELAY_TIME_SLOW 6000
 unsigned long i;
 
 void init(){
@@ -30,10 +30,9 @@ void main(void) {
       PORTA = 0x35;
       Delay(100000);
     }
-    if (PORTB & 0x02) {
+    if (FR1) {
       PORTA = 0x36;
       Delay(Speed);
-
       PORTA = 0x35;
       Delay(Speed);
       PORTA = 0x39;
@@ -54,24 +53,5 @@ void main(void) {
       FR2 = FR1;
       FR1 = PORTB & 0x01;
     }
-    // if (PORTB & 0x01) {
-    //   PORTA = 0x34;
-    //   Delay(Speed);
-    //   PORTA = 0x32;
-    //   Delay(Speed);
-    //   PORTA = 0x38;
-    //   Delay(Speed);
-    //   PORTA = 0x31;
-    //   Delay(Speed);
-    // }else{
-    //   PORTA = 0x34;
-    //   Delay(Speed);
-    //   PORTA = 0x31;
-    //   Delay(Speed);
-    //   PORTA = 0x38;
-    //   Delay(Speed);
-    //   PORTA = 0x32;
-    //   Delay(Speed);
-    // }
   }
 }

@@ -27,7 +27,7 @@ SECTION-ALLOCATION SECTION
 Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                              6     R     0x2000     0x2005   MY_PSEUDO_ROM
-.text                            188     R     0x2006     0x20C1   MY_PSEUDO_ROM
+.text                            192     R     0x2006     0x20C5   MY_PSEUDO_ROM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
 .abs_section_a                     1   N/I        0xA        0xA   .absSeg2
@@ -370,11 +370,11 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg339
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg340
 .common                            4   R/W     0x1000     0x1003   MY_RAM
-RUNTIME                            5     R     0x20C2     0x20C6   MY_PSEUDO_ROM
+RUNTIME                            5     R     0x20C6     0x20CA   MY_PSEUDO_ROM
 .stack                           256   R/W     0x1004     0x1103   MY_RAM
 
 Summary of section sizes per section type:
-READ_ONLY (R):          C7 (dec:      199)
+READ_ONLY (R):          CB (dec:      203)
 READ_WRITE (R/W):      104 (dec:      260)
 NO_INIT (N/I):         190 (dec:      400)
 
@@ -672,7 +672,7 @@ MODULE:                 -- mc9s12dg256.c.o --
      _CAN4TXDSR7                                2BB       1       1       0   .abs_section_2bb
      _CAN4TXDLR                                 2BC       1       1       0   .abs_section_2bc
      _CAN4TXTBPR                                2BD       1       1       0   .abs_section_2bd
-     _PORTAB                                      0       2       2      11   .abs_section_0
+     _PORTAB                                      0       2       2      12   .abs_section_0
      _DDRAB                                       2       2       2       2   .abs_section_2
      _PARTID                                     1A       2       2       0   .abs_section_1a
      _TCNT                                       44       2       2       0   .abs_section_44
@@ -735,7 +735,7 @@ MODULE:                 -- main.c.o --
 - PROCEDURES:
      init                                      2006       D      13       1   .text       
      Delay                                     2013      2E      46       6   .text       
-     main                                      2041      81     129       1   .text       
+     main                                      2041      85     133       1   .text       
 - VARIABLES:
      i                                         1000       4       4       8   .common     
 MODULE:                 -- Start12.c.o --
@@ -746,7 +746,7 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          1104       0       0       1               
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _LINC                                     20C2       5       5       1   RUNTIME     
+     _LINC                                     20C6       5       5       1   RUNTIME     
 - VARIABLES:
 
 *********************************************************************************************
@@ -754,7 +754,7 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dg256.c.o                            400      0      0
-  main.c.o                                     4    188      0
+  main.c.o                                     4    192      0
   Start12.c.o                                  0      6      0
   rtshc12.c.o (ansisi.lib)                     0      5      0
   other                                      256      0      0
@@ -1457,7 +1457,7 @@ SECTION: "RUNTIME"
 OBJECT LIST SORTED BY ADDRESS
      Name                                      Addr   hSize   dSize     Ref    Section   RLIB
 ---------------------------------------------------------------------------------------------
-     _PORTAB                                      0       2       2      11   .abs_section_0
+     _PORTAB                                      0       2       2      12   .abs_section_0
      _DDRAB                                       2       2       2       2   .abs_section_2
      _PORTE                                       8       1       1       0   .abs_section_8
      _DDRE                                        9       1       1       0   .abs_section_9
@@ -1802,8 +1802,8 @@ OBJECT LIST SORTED BY ADDRESS
      _Startup                                  2000       6       6       0   .init       
      init                                      2006       D      13       1   .text       
      Delay                                     2013      2E      46       6   .text       
-     main                                      2041      81     129       1   .text       
-     _LINC                                     20C2       5       5       1   RUNTIME     
+     main                                      2041      85     133       1   .text       
+     _LINC                                     20C6       5       5       1   RUNTIME     
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
@@ -1856,5 +1856,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 2
-Total size of all blocks to be downloaded: 199
+Total size of all blocks to be downloaded: 203
 

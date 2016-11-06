@@ -8,6 +8,11 @@
 #define SRCLK_PIN 6
 #define SRCLR_PIN 7
 
+//testing shift regsiter
+unsigned char rowData;
+unsigned char colData;
+unsigned char temp;
+
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
   pinMode(SERIAL_ROW_PIN, OUTPUT);
@@ -16,29 +21,31 @@ void port_iodr_init(){ // iodirection init
   pinMode(SRCLR_PIN, OUTPUT);
   pinMode(SRCLK_PIN, OUTPUT);
 }
-unsigned char rowData;
-unsigned char colData;
-unsigned char temp;
+
+void port_ioval_init(){ //io value init
+  digitalWrite(OE_PIN, LOW); // set the output_enable low to display on matrix
+}
+
+void task_init(){
+  StartSendSecPaulse(1);
+  vTaskStartScheduler();
+}
+
 void setup() {
   // put your setup code here, to run once:
   port_iodr_init();
-  digitalWrite(OE_PIN, LOW);
-  temp = 0;
+  port_ioval_init();
+  task_init();
 }
 
 void loop() {
   // nothing here
-  colData = 0x5;
-  rowData = ~0x5;
-  send_data(rowData, colData);
-  delay(200);
 }
 
 void send_data(unsigned char rowData, unsigned char colData){
   unsigned char mask;
   digitalWrite(SRCLR_PIN, HIGH); // set SRCLR high
   digitalWrite(RCLK_PIN, LOW); // set RCLK low
-
   for(int i = 8;i >= 0;i--){
     mask = (1 << i);
     // PORTB &= ~SRCLK_MASK; // set SRCLK low
@@ -54,4 +61,43 @@ void send_data(unsigned char rowData, unsigned char colData){
       digitalWrite(pin, LOW);
     }
     // PORTB = 0x00; //reset
+}
+
+enum sendState {sendInit, SEND} send_state;
+
+void send_Init(){
+  send_state = sendInit;
+}
+
+void send_Tick(){
+  switch (send_state) { // actions
+    case sendInit:
+      colData = 0x09;
+      rowData = ~0x05;
+    break;
+    case SEND:
+      send_data(++rowData, ++colData);
+    break;
+  }
+
+  switch (send_state) { // transitions
+    case sendInit:
+      send_state = SEND;
+    break;
+    case SEND:
+      send_state = SEND;
+    break;
+  }
+}
+
+void SendSecTask(){
+  send_Init();
+  for(;;){
+    send_Tick();
+    delay(100);
+  }
+}
+
+void StartSendSecPaulse(unsigned portBASE_TYPE Priority){
+	xTaskCreate(SendSecTask, (signed portCHAR *)"SendSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

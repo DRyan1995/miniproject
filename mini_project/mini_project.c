@@ -29,7 +29,7 @@ short btnFlag;
 SoftwareSerial mySerial(9, 10);//RX, TX
 
 // for stepper motor
-const int stepsPerRevolution = 64;
+const int stepsPerRevolution = 200;
 Stepper myStepper(stepsPerRevolution, 11, 12, 13, A5);
 short stepperBusy;
 
@@ -178,7 +178,7 @@ void btn_Tick(){
 void stepper_Tick(){
   switch (stepper_state) { //actions
     case stepperInit:
-      myStepper.setSpeed(60);
+      myStepper.setSpeed(120);
       stepperBusy = 0;
     break;
     case CLOCKWISE:
@@ -249,4 +249,3 @@ void StartBtnSecPulse(unsigned portBASE_TYPE Priority){
 void StartStepperSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(StepperSecTask, (signed portCHAR *)"StepperSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }
-

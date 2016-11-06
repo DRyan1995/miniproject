@@ -1,6 +1,7 @@
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
 
+//for shift register
 #define SERIAL_ROW_PIN 2
 #define SERIAL_COL_PIN 3
 #define OE_PIN 4
@@ -8,10 +9,16 @@
 #define SRCLK_PIN 6
 #define SRCLR_PIN 7
 
-//testing shift regsiter
+//GPIO
+#define CONFRIM_BTN_PIN 8
+
+// testing shift regsiter
 unsigned char rowData;
 unsigned char colData;
 unsigned char temp;
+
+// btn flag;
+short btnFlag;
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -20,6 +27,7 @@ void port_iodr_init(){ // iodirection init
   pinMode(RCLK_PIN, OUTPUT);
   pinMode(SRCLR_PIN, OUTPUT);
   pinMode(SRCLK_PIN, OUTPUT);
+  pinMode(CONFRIM_BTN_PIN, INPUT);
 }
 
 void port_ioval_init(){ //io value init
@@ -27,14 +35,20 @@ void port_ioval_init(){ //io value init
 }
 
 void task_init(){
-  StartSendSecPaulse(1);
+  StartSendSecPulse(1);
+  StartBtnSecPulse(1);
   vTaskStartScheduler();
+}
+
+void serial_setup(){
+  Serial.begin(9600);
 }
 
 void setup() {
   // put your setup code here, to run once:
   port_iodr_init();
   port_ioval_init();
+  serial_setup();
   task_init();
 }
 
@@ -64,9 +78,14 @@ void send_data(unsigned char rowData, unsigned char colData){
 }
 
 enum sendState {sendInit, SEND} send_state;
+enum btnState {btnInit, POLLING} btn_state;
 
 void send_Init(){
   send_state = sendInit;
+}
+
+void btn_Init(){
+  btn_state = btnInit;
 }
 
 void send_Tick(){
@@ -78,6 +97,8 @@ void send_Tick(){
     case SEND:
       send_data(++rowData, ++colData);
     break;
+    default:
+    break;
   }
 
   switch (send_state) { // transitions
@@ -86,6 +107,36 @@ void send_Tick(){
     break;
     case SEND:
       send_state = SEND;
+    break;
+    default:
+      send_state = sendInit;
+    break;
+  }
+}
+
+void btn_Tick(){
+  switch (btn_state) { // actions
+    case btnInit:
+      btnFlag = 0;
+    break;
+    case POLLING:
+      btnFlag = digitalRead(CONFRIM_BTN_PIN);
+      Serial.println(btnFlag);
+    break;
+    default:
+      btnFlag = 0;
+    break;
+  }
+
+  switch (btn_state) { //transitions
+    case btnInit:
+      btn_state = POLLING;
+    break;
+    case POLLING:
+      btn_state = POLLING;
+    break;
+    default:
+      btn_state = btnInit;
     break;
   }
 }
@@ -98,6 +149,18 @@ void SendSecTask(){
   }
 }
 
-void StartSendSecPaulse(unsigned portBASE_TYPE Priority){
+void BtnSecTask(){
+  btn_Init();
+  for(;;){
+    btn_Tick();
+    delay(30);
+  }
+}
+
+void StartSendSecPulse(unsigned portBASE_TYPE Priority){
 	xTaskCreate(SendSecTask, (signed portCHAR *)"SendSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
+}
+
+void StartBtnSecPulse(unsigned portBASE_TYPE Priority){
+	xTaskCreate(BtnSecTask, (signed portCHAR *)"BtnSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

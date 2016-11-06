@@ -49,11 +49,22 @@ void serial_setup(){
   mySerial.begin(9600);
 }
 
-void setup() {
-  // put your setup code here, to run once:
+void wifi_setup(){
+  // delay(1000);
+  // mySerial.write("AT+RST\r\n");
+  // delay(1500);
+  mySerial.write("AT+CIPMUX=1\r\n");
+  delay(200);
+  mySerial.write("AT+CIPSERVER=1\r\n");
+  delay(200);
+}
+
+
+void setup() { // start_up
   port_iodr_init();
   port_ioval_init();
   serial_setup();
+  wifi_setup();
   task_init();
 }
 
@@ -165,7 +176,6 @@ void BtnSecTask(){
   btn_Init();
   for(;;){
     btn_Tick();
-    delay(1);
   }
 }
 

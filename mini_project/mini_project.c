@@ -23,7 +23,7 @@ unsigned char colData;
 unsigned char temp;
 
 // btn flag;
-short btnFlag;
+int btnFlag;
 
 // for software serial
 SoftwareSerial mySerial(9, 10);//RX, TX
@@ -49,8 +49,10 @@ void port_ioval_init(){ //io value init
 
 void task_init(){
   StartSendSecPulse(1);
+  StartUartSecPulse(1);
   StartBtnSecPulse(1);
   StartStepperSecPulse(1);
+
   vTaskStartScheduler();
 }
 
@@ -102,6 +104,7 @@ void send_data(unsigned char rowData, unsigned char colData){
 enum sendState {sendInit, SEND} send_state;
 enum btnState {btnInit, POLLING} btn_state;
 enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
+enum uartState {uartInit, uartListening} uart_state;
 
 void send_Init(){
   send_state = sendInit;
@@ -113,6 +116,10 @@ void btn_Init(){
 
 void stepper_Init(){
   stepper_state = stepperInit;
+}
+
+void uart_Init(){
+  uart_state = uartInit;
 }
 
 void send_Tick(){
@@ -148,14 +155,6 @@ void btn_Tick(){
     break;
     case POLLING:
       btnFlag = digitalRead(CONFRIM_BTN_PIN);
-    //   Serial.println(btnFlag);
-    //test
-    if(Serial.available()){
-        mySerial.write(Serial.read());
-    }
-    if(mySerial.available()){
-        Serial.write(mySerial.read());
-    }
     break;
     default:
       btnFlag = 0;
@@ -215,11 +214,43 @@ void stepper_Tick(){
   }
 }
 
+void uart_Tick(){
+  switch (uart_state) { // actions
+    case uartInit:
+
+    break;
+    case  uartListening:
+      // Serial.println(btnFlag);
+      if(Serial.available()){
+          mySerial.write(Serial.read());
+      }
+      if(mySerial.available()){
+          Serial.write(mySerial.read());
+      }
+      // delay(1);
+    break;
+    default:
+    break;
+  }
+
+  switch (uart_state) { // transitions
+    case uartInit:
+      uart_state = uartListening;
+    break;
+    case  uartListening:
+      uart_state = uartListening;
+    break;
+    default:
+      uart_state = uartInit;
+    break;
+  }
+}
+
 void SendSecTask(){
   send_Init();
   for(;;){
     send_Tick();
-    delay(100);
+    delay(20);
   }
 }
 
@@ -227,6 +258,7 @@ void BtnSecTask(){
   btn_Init();
   for(;;){
     btn_Tick();
+    delay(50);
   }
 }
 
@@ -235,6 +267,14 @@ void StepperSecTask(){
   for(;;){
     stepper_Tick();
     delay(100);
+  }
+}
+
+void UartSecTask(){
+  uart_Init();
+  for(;;){
+    uart_Tick();
+    delay(5);
   }
 }
 
@@ -248,4 +288,8 @@ void StartBtnSecPulse(unsigned portBASE_TYPE Priority){
 
 void StartStepperSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(StepperSecTask, (signed portCHAR *)"StepperSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
+}
+
+void StartUartSecPulse(unsigned portBASE_TYPE Priority){
+  xTaskCreate(UartSecTask, (signed portCHAR *)"UartSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

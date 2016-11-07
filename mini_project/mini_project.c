@@ -1,5 +1,5 @@
 #include <Arduino_FreeRTOS.h>
-#include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
+#include <semphr.h>  // add the FreeRTOS functions for Semaphores (or FlbtnFlags).
 #include <SoftwareSerial.h>
 #include <Stepper.h>
 
@@ -22,8 +22,8 @@ unsigned char rowData;
 unsigned char colData;
 unsigned char temp;
 
-// btn flag;
-int ag;
+// btn flbtnFlag;
+int btnFlag;
 
 // for software serial
 SoftwareSerial mySerial(9, 10);//RX, TX
@@ -37,6 +37,7 @@ short stepperBusy;
 #define LR_INPUT A0
 #define UD_INPUT A1
 int LRValue, UDValue;
+short leftPressed, rightPressed, upPressed, downPressed;
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -139,7 +140,7 @@ void send_Tick(){
       rowData = ~0x05;
     break;
     case SEND:
-      send_data(++rowData, ++colData);
+      send_data(rowData, colData);
     break;
     default:
     break;
@@ -161,13 +162,18 @@ void send_Tick(){
 void btn_Tick(){
   switch (btn_state) { // actions
     case btnInit:
-      ag = 0;
+      btnFlag = 0;
     break;
     case POLLING:
-      ag = digitalRead(CONFRIM_BTN_PIN);
+      btnFlag = digitalRead(CONFRIM_BTN_PIN);
+      // for testing
+      if(!btnFlag){
+        ++colData;
+        ++rowData;
+      }
     break;
     default:
-      ag = 0;
+      btnFlag = 0;
     break;
   }
 
@@ -230,11 +236,25 @@ void uart_Tick(){
 
     break;
     case  uartListening:
-      if(Serial.available()){
-          mySerial.write(Serial.read());
+      //*** for the monitor debugg **
+      // if(Serial.available()){
+      //     mySerial.write(Serial.read());
+      // }
+      // ***************************
+      // for testing
+      if (!btnFlag) {
+        mySerial.write("BtnPressed!\r\n");
       }
+      if(upPressed){
+        mySerial.write("UP!\r\n");
+      }
+      if(leftPressed){
+        mySerial.write("LEFT!\r\n");
+      }
+
+      //***************
       if(mySerial.available()){
-          Serial.write(mySerial.read());
+        Serial.write(mySerial.read());
       }
     break;
     default:
@@ -257,6 +277,10 @@ void uart_Tick(){
 void a2d_Tick(){
   switch (a2d_state) { // actions
     case a2dInit:
+      leftPressed = 0;
+      rightPressed = 0;
+      upPressed = 0;
+      downPressed = 0;
     break;
     case a2dListening:
       LRValue = analogRead(LR_INPUT);
@@ -267,6 +291,10 @@ void a2d_Tick(){
       // Serial.print(" UD: ");
       // Serial.println(UDValue);
       // ************
+      leftPressed = (LRValue < 115)?1:0;
+      rightPressed = (LRValue > 135)?1:0;
+      downPressed = (UDValue < 115)?1:0;
+      upPressed = (UDValue > 135)?1:0;
     break;
     default:
     break;

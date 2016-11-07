@@ -23,7 +23,7 @@ unsigned char colData;
 unsigned char temp;
 
 // btn flag;
-int btnFlag;
+int ag;
 
 // for software serial
 SoftwareSerial mySerial(9, 10);//RX, TX
@@ -32,6 +32,11 @@ SoftwareSerial mySerial(9, 10);//RX, TX
 const int stepsPerRevolution = 200;
 Stepper myStepper(stepsPerRevolution, 11, 12, 13, A5);
 short stepperBusy;
+
+// for Joystick
+#define LR_INPUT A0
+#define UD_INPUT A1
+int LRValue, UDValue;
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -52,7 +57,7 @@ void task_init(){
   StartUartSecPulse(1);
   StartBtnSecPulse(1);
   StartStepperSecPulse(1);
-
+  StartA2dSecPulse(1);
   vTaskStartScheduler();
 }
 
@@ -68,7 +73,7 @@ void wifi_setup(){
   mySerial.write("AT+CIPMUX=1\r\n");
   delay(200);
   mySerial.write("AT+CIPSERVER=1\r\n");
-  delay(200);
+  // delay(200);
 }
 
 void setup() { // start_up
@@ -105,6 +110,7 @@ enum sendState {sendInit, SEND} send_state;
 enum btnState {btnInit, POLLING} btn_state;
 enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
+enum a2dState {a2dInit, a2dListening} a2d_state;
 
 void send_Init(){
   send_state = sendInit;
@@ -120,6 +126,10 @@ void stepper_Init(){
 
 void uart_Init(){
   uart_state = uartInit;
+}
+
+void a2d_Init(){
+  a2d_state = a2dInit;
 }
 
 void send_Tick(){
@@ -151,13 +161,13 @@ void send_Tick(){
 void btn_Tick(){
   switch (btn_state) { // actions
     case btnInit:
-      btnFlag = 0;
+      ag = 0;
     break;
     case POLLING:
-      btnFlag = digitalRead(CONFRIM_BTN_PIN);
+      ag = digitalRead(CONFRIM_BTN_PIN);
     break;
     default:
-      btnFlag = 0;
+      ag = 0;
     break;
   }
 
@@ -220,14 +230,12 @@ void uart_Tick(){
 
     break;
     case  uartListening:
-      // Serial.println(btnFlag);
       if(Serial.available()){
           mySerial.write(Serial.read());
       }
       if(mySerial.available()){
           Serial.write(mySerial.read());
       }
-      // delay(1);
     break;
     default:
     break;
@@ -242,6 +250,37 @@ void uart_Tick(){
     break;
     default:
       uart_state = uartInit;
+    break;
+  }
+}
+
+void a2d_Tick(){
+  switch (a2d_state) { // actions
+    case a2dInit:
+    break;
+    case a2dListening:
+      LRValue = analogRead(LR_INPUT);
+      UDValue = analogRead(UD_INPUT);
+      // test
+      // Serial.print("LR: ");
+      // Serial.print(LRValue);
+      // Serial.print(" UD: ");
+      // Serial.println(UDValue);
+      // ************
+    break;
+    default:
+    break;
+  }
+
+  switch (a2d_state) { // transitions
+    case a2dInit:
+      a2d_state = a2dListening;
+    break;
+    case a2dListening:
+      a2d_state = a2dListening;
+    break;
+    default:
+      a2d_state = a2dInit;
     break;
   }
 }
@@ -278,6 +317,14 @@ void UartSecTask(){
   }
 }
 
+void A2dSecTask(){
+  a2d_Init();
+  for(;;){
+    a2d_Tick();
+    delay(50);
+  }
+}
+
 void StartSendSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(SendSecTask, (signed portCHAR *)"SendSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }
@@ -292,4 +339,8 @@ void StartStepperSecPulse(unsigned portBASE_TYPE Priority){
 
 void StartUartSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(UartSecTask, (signed portCHAR *)"UartSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
+}
+
+void StartA2dSecPulse(unsigned portBASE_TYPE Priority){
+  xTaskCreate(A2dSecTask, (signed portCHAR *)"A2dSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

@@ -284,7 +284,9 @@ void a2d_Tick(){
     break;
     case a2dListening:
       LRValue = analogRead(LR_INPUT);
+      LRValue = map(LRValue, 0, 1023, 0, 255);
       UDValue = analogRead(UD_INPUT);
+      UDValue = map(UDValue, 0, 1023, 0, 255);
       // test
       // Serial.print("LR: ");
       // Serial.print(LRValue);

@@ -39,6 +39,10 @@ short stepperBusy;
 int LRValue, UDValue;
 short leftPressed, rightPressed, upPressed, downPressed;
 
+// for wifi module
+short wifiConfigured;
+short wifiSetting;
+
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
   pinMode(SERIAL_ROW_PIN, OUTPUT);
@@ -71,9 +75,19 @@ void wifi_setup(){
   // delay(1000);
   // mySerial.write("AT+RST\r\n");
   // delay(1500);
+  mySerial.write("AT+CWMODE=1\r\n");
+  delay(100);
+  Serial.write(mySerial.read());
+  mySerial.write("AT+CWJAP=\"Yolanda\",\"ZiYuBB1995\"\r\n");
+  delay(5000);
+  Serial.write(mySerial.read());
   mySerial.write("AT+CIPMUX=1\r\n");
-  delay(200);
-  mySerial.write("AT+CIPSERVER=1\r\n");
+  delay(100);
+  Serial.write(mySerial.read());
+  delay(100);
+  mySerial.write("AT+CIPSERVER=1,88888\r\n");
+  wifiConfigured = 1;
+  wifiSetting = 0;
   // delay(200);
 }
 
@@ -81,7 +95,7 @@ void setup() { // start_up
   port_iodr_init();
   port_ioval_init();
   serial_setup();
-  wifi_setup();
+  // wifi_setup();
   task_init();
   myStepper.step(stepsPerRevolution);
 }
@@ -233,13 +247,25 @@ void stepper_Tick(){
 void uart_Tick(){
   switch (uart_state) { // actions
     case uartInit:
-
+      wifiSetting = 0;
+      wifiConfigured = 0;
     break;
     case  uartListening:
+      if (wifiSetting) {
+        if(mySerial.available()){
+          Serial.write(mySerial.read());
+        }
+        break;
+      }
+      if (!wifiConfigured) {
+        wifiSetting = 1;
+        wifi_setup();
+        break;
+      }
       //*** for the monitor debugg **
-      // if(Serial.available()){
-      //     mySerial.write(Serial.read());
-      // }
+      if(Serial.available()){
+          mySerial.write(Serial.read());
+      }
       // ***************************
       // for testing
       if (!btnFlag) {
@@ -285,8 +311,10 @@ void a2d_Tick(){
     case a2dListening:
       LRValue = analogRead(LR_INPUT);
       LRValue = map(LRValue, 0, 1023, 0, 255);
+      delay(20);
       UDValue = analogRead(UD_INPUT);
       UDValue = map(UDValue, 0, 1023, 0, 255);
+      delay(20);
       // test
       // Serial.print("LR: ");
       // Serial.print(LRValue);
@@ -294,9 +322,9 @@ void a2d_Tick(){
       // Serial.println(UDValue);
       // ************
       leftPressed = (LRValue < 115)?1:0;
-      rightPressed = (LRValue > 135)?1:0;
+      rightPressed = (LRValue > 140)?1:0;
       downPressed = (UDValue < 115)?1:0;
-      upPressed = (UDValue > 135)?1:0;
+      upPressed = (UDValue > 140)?1:0;
     break;
     default:
     break;
@@ -343,7 +371,7 @@ void UartSecTask(){
   uart_Init();
   for(;;){
     uart_Tick();
-    delay(5);
+    delay(1);
   }
 }
 
@@ -351,7 +379,7 @@ void A2dSecTask(){
   a2d_Init();
   for(;;){
     a2d_Tick();
-    delay(50);
+    delay(100);
   }
 }
 

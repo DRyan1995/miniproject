@@ -67,7 +67,7 @@ void task_init(){
 }
 
 void serial_setup(){
-  Serial.begin(9600);
+  Serial.begin(1200);
   mySerial.begin(9600);
 }
 

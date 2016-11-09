@@ -43,6 +43,10 @@ short leftPressed, rightPressed, upPressed, downPressed;
 short wifiConfigured;
 short wifiSetting;
 
+// for preset strings
+String sendInstruction = "AT+CIPSEND=0,14\r\n";
+String content = "btn is pressed!";
+
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
   pinMode(SERIAL_ROW_PIN, OUTPUT);
@@ -63,6 +67,7 @@ void task_init(){
   StartBtnSecPulse(1);
   StartStepperSecPulse(1);
   StartA2dSecPulse(1);
+  // StartJudgeSecPulse(1);
   vTaskStartScheduler();
 }
 
@@ -88,22 +93,21 @@ void wifi_setup(){
   mySerial.write("AT+CIPSERVER=1,88888\r\n");
   wifiConfigured = 1;
   wifiSetting = 0;
-  // delay(200);
+  delay(200);
 }
 
 void setup() { // start_up
   port_iodr_init();
   port_ioval_init();
   serial_setup();
-  // wifi_setup();
   task_init();
-  myStepper.step(stepsPerRevolution);
 }
 
 void loop() {
   // nothing here
 }
 
+//this is for shift register
 void send_data(unsigned char rowData, unsigned char colData){
   unsigned char mask;
   digitalWrite(SRCLR_PIN, HIGH); // set SRCLR high
@@ -121,11 +125,19 @@ void send_data(unsigned char rowData, unsigned char colData){
     }
 }
 
+void sendMsg(int devId){
+  mySerial.print(sendInstruction);
+  delay(20);
+  mySerial.print(content);
+  return;
+}
+
 enum sendState {sendInit, SEND} send_state;
 enum btnState {btnInit, POLLING} btn_state;
 enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
 enum a2dState {a2dInit, a2dListening} a2d_state;
+enum judgeState {judgeInit, judging} judge_state;
 
 void send_Init(){
   send_state = sendInit;
@@ -145,6 +157,10 @@ void uart_Init(){
 
 void a2d_Init(){
   a2d_state = a2dInit;
+}
+
+void judge_Init(){
+  judge_state = judgeInit;
 }
 
 void send_Tick(){
@@ -184,6 +200,8 @@ void btn_Tick(){
       if(!btnFlag){
         ++colData;
         ++rowData;
+        sendMsg(0);
+        // mySerial.print("fuckyou");
       }
     break;
     default:
@@ -207,7 +225,7 @@ void btn_Tick(){
 void stepper_Tick(){
   switch (stepper_state) { //actions
     case stepperInit:
-      myStepper.setSpeed(120);
+      myStepper.setSpeed(240);
       stepperBusy = 0;
     break;
     case CLOCKWISE:
@@ -268,15 +286,12 @@ void uart_Tick(){
       }
       // ***************************
       // for testing
-      if (!btnFlag) {
-        mySerial.write("BtnPressed!\r\n");
-      }
-      if(upPressed){
-        mySerial.write("UP!\r\n");
-      }
-      if(leftPressed){
-        mySerial.write("LEFT!\r\n");
-      }
+      // if(upPressed){
+      //   mySerial.write("UP!\r\n");
+      // }
+      // if(leftPressed){
+      //   mySerial.write("LEFT!\r\n");
+      // }
 
       //***************
       if(mySerial.available()){
@@ -343,6 +358,33 @@ void a2d_Tick(){
   }
 }
 
+void judge_Tick(){
+  switch (judge_state) { //actions
+    case judgeInit:
+    break;
+    case judging:
+      if(!btnFlag){
+        String content = "btn pressed!";
+        // sendMsg(0, content);
+      }
+    break;
+    default:
+    break;
+  }
+
+  switch (judge_state) { // transitions
+    case judgeInit:
+      judge_state = judging;
+    break;
+    case judging:
+      judge_state = judging;
+    break;
+    default:
+      judge_state = judgeInit;
+    break;
+  }
+}
+
 void SendSecTask(){
   send_Init();
   for(;;){
@@ -383,6 +425,14 @@ void A2dSecTask(){
   }
 }
 
+void JudgeSecTask(){
+  judge_Init();
+  for(;;){
+    judge_Tick();
+    delay(300);
+  }
+}
+
 void StartSendSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(SendSecTask, (signed portCHAR *)"SendSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }
@@ -401,4 +451,8 @@ void StartUartSecPulse(unsigned portBASE_TYPE Priority){
 
 void StartA2dSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(A2dSecTask, (signed portCHAR *)"A2dSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
+}
+
+void StartJudgeSecPulse(unsigned portBASE_TYPE Priority){
+  xTaskCreate(JudgeSecTask, (signed portCHAR *)"JudgeSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

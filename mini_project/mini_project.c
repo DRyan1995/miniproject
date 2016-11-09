@@ -67,7 +67,6 @@ void task_init(){
   StartBtnSecPulse(1);
   StartStepperSecPulse(1);
   StartA2dSecPulse(1);
-  // StartJudgeSecPulse(1);
   vTaskStartScheduler();
 }
 
@@ -125,7 +124,7 @@ void send_data(unsigned char rowData, unsigned char colData){
     }
 }
 
-void sendMsg(int devId){
+void sendMsg(){
   mySerial.print(sendInstruction);
   delay(20);
   mySerial.print(content);
@@ -137,7 +136,6 @@ enum btnState {btnInit, POLLING} btn_state;
 enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
 enum a2dState {a2dInit, a2dListening} a2d_state;
-enum judgeState {judgeInit, judging} judge_state;
 
 void send_Init(){
   send_state = sendInit;
@@ -157,10 +155,6 @@ void uart_Init(){
 
 void a2d_Init(){
   a2d_state = a2dInit;
-}
-
-void judge_Init(){
-  judge_state = judgeInit;
 }
 
 void send_Tick(){
@@ -200,7 +194,7 @@ void btn_Tick(){
       if(!btnFlag){
         ++colData;
         ++rowData;
-        sendMsg(0);
+        sendMsg();
         // mySerial.print("fuckyou");
       }
     break;
@@ -358,38 +352,11 @@ void a2d_Tick(){
   }
 }
 
-void judge_Tick(){
-  switch (judge_state) { //actions
-    case judgeInit:
-    break;
-    case judging:
-      if(!btnFlag){
-        String content = "btn pressed!";
-        // sendMsg(0, content);
-      }
-    break;
-    default:
-    break;
-  }
-
-  switch (judge_state) { // transitions
-    case judgeInit:
-      judge_state = judging;
-    break;
-    case judging:
-      judge_state = judging;
-    break;
-    default:
-      judge_state = judgeInit;
-    break;
-  }
-}
-
 void SendSecTask(){
   send_Init();
   for(;;){
     send_Tick();
-    delay(20);
+    vTaskDelay(20);
   }
 }
 
@@ -397,7 +364,7 @@ void BtnSecTask(){
   btn_Init();
   for(;;){
     btn_Tick();
-    delay(50);
+    vTaskDelay(5);
   }
 }
 
@@ -405,7 +372,7 @@ void StepperSecTask(){
   stepper_Init();
   for(;;){
     stepper_Tick();
-    delay(100);
+    vTaskDelay(100);
   }
 }
 
@@ -413,7 +380,7 @@ void UartSecTask(){
   uart_Init();
   for(;;){
     uart_Tick();
-    delay(1);
+    // vTaskDelay(1);
   }
 }
 
@@ -421,15 +388,7 @@ void A2dSecTask(){
   a2d_Init();
   for(;;){
     a2d_Tick();
-    delay(100);
-  }
-}
-
-void JudgeSecTask(){
-  judge_Init();
-  for(;;){
-    judge_Tick();
-    delay(300);
+    vTaskDelay(100);
   }
 }
 
@@ -451,8 +410,4 @@ void StartUartSecPulse(unsigned portBASE_TYPE Priority){
 
 void StartA2dSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(A2dSecTask, (signed portCHAR *)"A2dSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
-}
-
-void StartJudgeSecPulse(unsigned portBASE_TYPE Priority){
-  xTaskCreate(JudgeSecTask, (signed portCHAR *)"JudgeSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }

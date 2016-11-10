@@ -116,15 +116,19 @@ void love_init(){
 }
 
 void des_init(){
+  for(int i = 0; i <= 8; i++)
+    for(int j = 0; j <= 5; j++)
+      destMatrix[i][j] = 0;
   destMatrix[5][3] = 1;
   destMatrix[6][3] = 1;
+  destMatrix[6][4] = 1;
 }
 
 int res_compare(){
   for(int i = 1; i <= 8; i++)
     for(int j = 1; j <= 5; j++)
-      if(destMatrix[i][j]!=displayMatrix[i][j])
-        return -1;
+      if(destMatrix[i][j] != displayMatrix[i][j])
+        return 0;
   return 1;
 }
 
@@ -163,20 +167,17 @@ void Display(){
     }
     send_data(rowData, colData);
     send_data(rowData, colData);
+  }
+  for(int i = 1; i <= 5; i++){
+    rowData = ~(1 << (i - 1));
+    colData = 0;
+    for(int j = 1; j <= 8; j++){
+      colData += displayMatrix[j][i] * (1 << (j - 1));
+    }
+    send_data(rowData, colData);
     send_data(rowData, colData);
     // send_data(rowData, colData);
-    send_data(rowData, colData);
   }
-  // for(int i = 1; i <= 5; i++){
-  //   rowData = ~(1 << (i - 1));
-  //   colData = 0;
-  //   for(int j = 1; j <= 8; j++){
-  //     colData += displayMatrix[j][i] * (1 << (j - 1));
-  //   }
-  //   send_data(rowData, colData);
-  //   send_data(rowData, colData);
-  //   // send_data(rowData, colData);
-  // }
 
 }
 
@@ -373,7 +374,7 @@ void stepper_Tick(){
     case READY:
       if(unLocked){
         stepper_state = CLOCKWISE;
-        unLocked = 0;
+        // unLocked = 0;
       }else{
         stepper_state = READY;
       }
@@ -382,6 +383,7 @@ void stepper_Tick(){
       if (stepperBusy) {
         stepper_state = CLOCKWISE;
       }else{
+        unLocked = 0;
         stepper_state = READY;
       }
     break;
@@ -463,24 +465,26 @@ void a2d_Tick(){
       delay(5);
       btnFlag = digitalRead(CONFRIM_BTN_PIN);
       // for testing
-      if(!btnFlag){
-        display_init();
-        unLocked = res_compare();
-        if (unLocked) {
-          sendMsg();
-        }
 
-      }
       // test
       // Serial.print("LR: ");
       // Serial.print(LRValue);
       // Serial.print(" UD: ");
       // Serial.println(UDValue);
       // ************
-      leftPressed = (LRValue < 115)?1:0;
-      rightPressed = (LRValue > 140)?1:0;
-      downPressed = (UDValue < 115)?1:0;
-      upPressed = (UDValue > 140)?1:0;
+      leftPressed = (LRValue < 50)?1:0;
+      rightPressed = (LRValue > 200)?1:0;
+      downPressed = (UDValue < 50)?1:0;
+      upPressed = (UDValue > 200)?1:0;
+      // for verifying
+      unLocked = 0;
+      if(!btnFlag){
+        unLocked = res_compare();
+        if (unLocked) {
+          sendMsg();
+        }
+        display_init();
+      }
     break;
     default:
     break;

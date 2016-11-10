@@ -17,13 +17,14 @@
 //GPIO
 #define CONFRIM_BTN_PIN 8
 
-// testing shift regsiter
-unsigned char rowData;
-unsigned char colData;
-unsigned char temp;
+// // testing shift regsiter
+// unsigned char rowData;
+// unsigned char colData;
+// unsigned char temp;
 
 // btn flbtnFlag;
 int btnFlag;
+int unLocked;
 
 // for software serial
 SoftwareSerial mySerial(9, 10);//RX, TX
@@ -45,13 +46,12 @@ short wifiSetting;
 
 // for preset strings
 String sendInstruction = "AT+CIPSEND=0,14\r\n";
-String content = "btn is pressed!";
+String content = "Door Unlocked!";
 
 // for pattern unlock
 unsigned char displayMatrix[9][6];
 unsigned char destMatrix[9][6];
 unsigned char curX, curY;
-
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -115,6 +115,19 @@ void love_init(){
   displayMatrix[6][4] = 1;
 }
 
+void des_init(){
+  destMatrix[5][3] = 1;
+  destMatrix[6][3] = 1;
+}
+
+int res_compare(){
+  for(int i = 1; i <= 8; i++)
+    for(int j = 1; j <= 5; j++)
+      if(destMatrix[i][j]!=displayMatrix[i][j])
+        return -1;
+  return 1;
+}
+
 void display_init(){
   for(int i = 0; i <= 8; i++){
     for(int j = 0; j <= 5; j++){
@@ -129,6 +142,7 @@ void display_init(){
 
 void setup() { // start_up
   display_init();
+  des_init();
   port_iodr_init();
   port_ioval_init();
   serial_setup();
@@ -192,7 +206,7 @@ void sendMsg(){
 }
 
 enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN} send_state;
-enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
+enum stepperState {stepperInit, READY, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
 enum a2dState {a2dInit, a2dListening} a2d_state;
 
@@ -328,15 +342,17 @@ void send_Tick(){
 void stepper_Tick(){
   switch (stepper_state) { //actions
     case stepperInit:
-      myStepper.setSpeed(240);
+      myStepper.setSpeed(120);
       stepperBusy = 0;
     break;
+    case READY:
+    break;
     case CLOCKWISE:
-      // if(!stepperBusy){
-      //   stepperBusy = 1;
-      //   myStepper.step(stepsPerRevolution);
-      //   stepperBusy = 0;
-      // }
+      if(!stepperBusy){
+        stepperBusy = 1;
+        myStepper.step(stepsPerRevolution);
+        stepperBusy = 0;
+      }
     break;
     case COUNTERCLOCKWISE:
       if(!stepperBusy){
@@ -352,10 +368,22 @@ void stepper_Tick(){
 
   switch (stepper_state) { // transitions
     case stepperInit:
-      stepper_state = CLOCKWISE;
+      stepper_state = READY;
+    break;
+    case READY:
+      if(unLocked){
+        stepper_state = CLOCKWISE;
+        unLocked = 0;
+      }else{
+        stepper_state = READY;
+      }
     break;
     case CLOCKWISE:
-      stepper_state = CLOCKWISE;
+      if (stepperBusy) {
+        stepper_state = CLOCKWISE;
+      }else{
+        stepper_state = READY;
+      }
     break;
     case COUNTERCLOCKWISE:
     break;
@@ -436,9 +464,12 @@ void a2d_Tick(){
       btnFlag = digitalRead(CONFRIM_BTN_PIN);
       // for testing
       if(!btnFlag){
-        ++colData;
-        ++rowData;
-        sendMsg();
+        display_init();
+        unLocked = res_compare();
+        if (unLocked) {
+          sendMsg();
+        }
+
       }
       // test
       // Serial.print("LR: ");

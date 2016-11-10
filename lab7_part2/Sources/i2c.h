@@ -2,7 +2,7 @@
  *                       i2c.h                       *
  *         I2C Library for EEPROM 24LC01B            *
  * ************************************************* */
- 
+
 #ifndef _I2C_H
 #define _I2C_H
 
@@ -27,6 +27,7 @@ void Init_I2C (char ibc, char i2c_ID);
 void SendSlaveID(char cx);
 char EErandomRead(char ID, char addr);
 char EEbyteWrite(char ID, char addr, char data);
+char EEPageWrite(char ID, char addr, short page);
 void eeAckPoll(char ID);
 
 #endif /* _I2C_H */

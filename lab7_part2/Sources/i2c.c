@@ -44,7 +44,7 @@ void SendSlaveID(char cx)
 #ifdef DBG_ON
      printf("I2C: 9S12 Start condition ... OK\r\n");
 #endif
-    
+
      IBSR = IBIF;           /* clear IBIF flag */
 
 #ifdef DBG_ON
@@ -60,9 +60,9 @@ char EErandomRead(char ID, char addr)
 #ifdef DBG_ON
      printf("I2C: 9S12 Read a byte from EEPROM\r\n");
 #endif
-     
+
      SendSlaveID(ID);
-     
+
 #ifdef DBG_ON
      printf("I2C:9S12 Wait for Transmission Acknowledgment\r\n");
 #endif
@@ -71,7 +71,7 @@ char EErandomRead(char ID, char addr)
 #ifdef DBG_ON
      printf("I2C:EEPROM ... Ack\r\n");
 #endif
-     
+
 #ifdef DBG_ON
      printf("I2C: 9S12 Send Address\r\n");
 #endif
@@ -83,11 +83,11 @@ char EErandomRead(char ID, char addr)
 
      if (IBSR & RXAK)
         return -1;
-     
+
 #ifdef DBG_ON
      printf("I2C: EEPROM ... Ack\r\n");
 #endif
-     
+
 #ifdef DBG_ON
      printf("I2C: 9S12 Generate Restart condition and prepare to read\r\n");
 #endif
@@ -133,7 +133,7 @@ char EEbyteWrite(char ID, char addr, char data)
      printf("I2C: 9S12 Wait for Acknowledgment\r\n");
 #endif
      SendSlaveID(ID);
-     
+
      if (IBSR & RXAK) /* error if EEPROM does not acknowledge */
         return -1;
 #ifdef DBG_ON
@@ -162,13 +162,25 @@ char EEbyteWrite(char ID, char addr, char data)
         return -1;
 #ifdef DBG_ON
      printf("I2C: EEPROM ... Ack\r\n");
-#endif     
+#endif
 
      IBCR &= ~MSSL;   /* generate a stop condition */
 #ifdef DBG_ON
      printf("I2C: 9S12 Generate Stop condition and finish reading a byte\r\n");
 #endif
      return 0;        /* normal write code */
+}
+
+/* EEPageWrite */
+char EEPageWrite(char ID, char addr, short page)
+{
+    char byte_low, byte_high;
+    byte_low = (char)(0x0f & page);
+    byte_high = (char)(page >> 4);
+    // write the low first
+    EEbyteWrite(ID, addr, byte_low);
+    EEbyteWrite(ID, addr + 0x02, byte_high);
+    return 0;        /* normal write code */
 }
 
 /* eeAckPoll */

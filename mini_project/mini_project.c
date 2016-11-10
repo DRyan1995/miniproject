@@ -39,6 +39,7 @@ short stepperBusy;
 #define UD_INPUT A1
 int LRValue, UDValue;
 short leftPressed, rightPressed, upPressed, downPressed;
+short upleftPressed, uprightPressed, downleftPressed, downrightPressed;
 
 // for wifi module
 short wifiConfigured;
@@ -206,7 +207,7 @@ void sendMsg(){
   return;
 }
 
-enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN} send_state;
+enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT} send_state;
 enum stepperState {stepperInit, READY, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
 enum a2dState {a2dInit, a2dListening} a2d_state;
@@ -267,6 +268,46 @@ void MoveDown(){
   displayMatrix[curX][++curY] = 1;
 }
 
+void MoveUpLeft(){
+  if(curX == 8 || curY == 1){
+    return;
+  }
+  if(displayMatrix[curX + 1][curY - 1]){
+    return;
+  }
+  displayMatrix[++curX][--curY] = 1;
+}
+
+void MoveUpRight(){
+  if(curX == 1 || curY == 1){
+    return;
+  }
+  if(displayMatrix[curX - 1][curY - 1]){
+    return;
+  }
+  displayMatrix[--curX][--curY] = 1;
+}
+
+void MoveDownLeft(){
+  if(curX == 8 || curY == 5){
+    return;
+  }
+  if(displayMatrix[curX + 1][curY + 1]){
+    return;
+  }
+  displayMatrix[++curX][++curY] = 1;
+}
+
+void MoveDownRight(){
+  if(curX == 1 || curY == 5){
+    return;
+  }
+  if(displayMatrix[curX - 1][curY + 1]){
+    return;
+  }
+  displayMatrix[--curX][++curY] = 1;
+}
+
 void send_Tick(){
   switch (send_state) { // actions
     case sendInit:
@@ -294,6 +335,22 @@ void send_Tick(){
       MoveDown();
       Display();
     break;
+    case UPLEFT:
+      MoveUpLeft();
+      Display();
+    break;
+    case UPRIGHT:
+      MoveUpRight();
+      Display();
+    break;
+    case DOWNLEFT:
+      MoveDownLeft();
+      Display();
+    break;
+    case DOWNRIGHT:
+      MoveDownRight();
+      Display();
+    break;
     default:
     break;
   }
@@ -303,7 +360,15 @@ void send_Tick(){
       send_state = WAIT;
     break;
     case WAIT:
-      if (leftPressed) {
+      if(upleftPressed){
+        send_state = UPLEFT;
+      }else if(uprightPressed){
+        send_state = UPRIGHT;
+      }else if(downleftPressed){
+        send_state = DOWNLEFT;
+      }else if(downrightPressed){
+        send_state = DOWNRIGHT;
+      }else if (leftPressed) {
         send_state = LEFT;
       }else if(rightPressed){
         send_state = RIGHT;
@@ -332,6 +397,18 @@ void send_Tick(){
       send_state = WAIT_RELEASE;
     break;
     case DOWN:
+      send_state = WAIT_RELEASE;
+    break;
+    case UPLEFT:
+      send_state = WAIT_RELEASE;
+    break;
+    case UPRIGHT:
+      send_state = WAIT_RELEASE;
+    break;
+    case DOWNLEFT:
+      send_state = WAIT_RELEASE;
+    break;
+    case DOWNRIGHT:
       send_state = WAIT_RELEASE;
     break;
     default:
@@ -455,14 +532,18 @@ void a2d_Tick(){
       rightPressed = 0;
       upPressed = 0;
       downPressed = 0;
+      upleftPressed = 0;
+      uprightPressed = 0;
+      downleftPressed = 0;
+      downrightPressed = 0;
     break;
     case a2dListening:
       LRValue = analogRead(LR_INPUT);
       LRValue = map(LRValue, 0, 1023, 0, 255);
-      delay(5);
+      delay(2);
       UDValue = analogRead(UD_INPUT);
       UDValue = map(UDValue, 0, 1023, 0, 255);
-      delay(5);
+      delay(2);
       btnFlag = digitalRead(CONFRIM_BTN_PIN);
       // for testing
 
@@ -472,10 +553,14 @@ void a2d_Tick(){
       // Serial.print(" UD: ");
       // Serial.println(UDValue);
       // ************
-      leftPressed = (LRValue < 50)?1:0;
-      rightPressed = (LRValue > 200)?1:0;
-      downPressed = (UDValue < 50)?1:0;
-      upPressed = (UDValue > 200)?1:0;
+      leftPressed = (LRValue < 90)?1:0;
+      rightPressed = (LRValue > 160)?1:0;
+      downPressed = (UDValue < 90)?1:0;
+      upPressed = (UDValue > 160)?1:0;
+      upleftPressed = (leftPressed & upPressed)?1:0;
+      uprightPressed = (rightPressed & upPressed)?1:0;
+      downleftPressed = (leftPressed & downPressed)?1:0;
+      downrightPressed = (rightPressed & downPressed)?1:0;
       // for verifying
       unLocked = 0;
       if(!btnFlag){
@@ -531,7 +616,7 @@ void A2dSecTask(){
   a2d_Init();
   for(;;){
     a2d_Tick();
-    vTaskDelay(30);
+    vTaskDelay(20);
   }
 }
 

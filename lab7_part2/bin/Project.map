@@ -1,5 +1,5 @@
 *** EVALUATION ***
-PROGRAM "D:\Desktop\I2C_EEPROM\bin\Project.abs"
+PROGRAM "C:\Users\Ryan\Desktop\ee128lab\lab7_part2\bin\Project.abs"
 
 *********************************************************************************************
 TARGET SECTION
@@ -31,7 +31,7 @@ _startupData is allocated at 0x2031 and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x1000     20
-  _Copy    *toCopyDownBeg 0x289C
+  _Copy    *toCopyDownBeg 0x28BE
 } _startupData;
 
 *********************************************************************************************
@@ -41,9 +41,9 @@ Section Name                    Size  Type     From       To       Segment
 .init                             49     R     0x2000     0x2030   MY_PSEUDO_ROM
 .startData                        10     R     0x2031     0x203A   MY_PSEUDO_ROM
 .rodata                          116     R     0x203B     0x20AE   MY_PSEUDO_ROM
-.rodata1                         371     R     0x20AF     0x2221   MY_PSEUDO_ROM
-.text                           1563     R     0x2222     0x283C   MY_PSEUDO_ROM
-.copy                              2     R     0x289C     0x289D   MY_PSEUDO_ROM
+.rodata1                         355     R     0x20AF     0x2211   MY_PSEUDO_ROM
+.text                           1613     R     0x2212     0x285E   MY_PSEUDO_ROM
+.copy                              2     R     0x28BE     0x28BF   MY_PSEUDO_ROM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
 .abs_section_a                     1   N/I        0xA        0xA   .absSeg2
@@ -386,12 +386,12 @@ Section Name                    Size  Type     From       To       Segment
 .abs_section_2ae                   2   N/I      0x2AE      0x2AF   .absSeg339
 .abs_section_2be                   2   N/I      0x2BE      0x2BF   .absSeg340
 .bss                               6   R/W     0x1000     0x1005   MY_RAM
-RUNTIME                           95     R     0x283D     0x289B   MY_PSEUDO_ROM
+RUNTIME                           95     R     0x285F     0x28BD   MY_PSEUDO_ROM
 .common                           14   R/W     0x1006     0x1013   MY_RAM
 .stack                           256   R/W     0x1014     0x1113   MY_RAM
 
 Summary of section sizes per section type:
-READ_ONLY (R):         89E (dec:     2206)
+READ_ONLY (R):         8C0 (dec:     2240)
 READ_WRITE (R/W):      114 (dec:      276)
 NO_INIT (N/I):         190 (dec:      400)
 
@@ -750,21 +750,20 @@ MODULE:                 -- mc9s12dg256.c.o --
      _CAN4TXTSR                                 2BE       2       2       0   .abs_section_2be
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     clearscreen                               2222       C      12       1   .text       
-     main                                      222E      96     150       1   .text       
+     clearscreen                               2212       C      12       1   .text       
+     main                                      221E      A0     160       1   .text       
 - VARIABLES:
-     STRING.EE128.LAB.7...2                    20AF       E      14       1   .rodata1    
-     STRING.I2C.based.EEPROM.Rea.3             20BD      27      39       1   .rodata1    
-     STRING......................4             20E4      29      41       1   .rodata1    
-     STRING....9S12.will.write.a.5             210D      29      41       1   .rodata1    
-     STRING......................6             2136      29      41       1   .rodata1    
-     STRING.EEPROM.address..0x.x.7             215F      17      23       1   .rodata1    
-     STRING.EEPROM.data.....0x.x.8             2176      17      23       1   .rodata1    
-     STRING....9                               218D       3       3       1   .rodata1    
-     STRING......................10            2190      2A      42       1   .rodata1    
-     STRING....9S12.will.read.a..11            21BA      27      39       1   .rodata1    
-     STRING......................12            21E1      2A      42       1   .rodata1    
-     STRING.EEPROM...0x.x...0x.x.13            220B      17      23       1   .rodata1    
+     STRING......................2             20AF      29      41       1   .rodata1    
+     STRING....9S12.will.write.a.3             20D8      29      41       1   .rodata1    
+     STRING......................4             2101      29      41       1   .rodata1    
+     STRING.EEPROM.starting.addr.5             212A      20      32       1   .rodata1    
+     STRING.EEPROM.page.data.....6             214A      1C      28       1   .rodata1    
+     STRING....7                               2166       3       3       1   .rodata1    
+     STRING......................8             2169      2A      42       1   .rodata1    
+     STRING....9S12.will.read.a..9             2193      27      39       1   .rodata1    
+     STRING......................10            21BA      2A      42       1   .rodata1    
+     STRING.EEPROM...0x.x...0x.x.11            21E4      17      23       1   .rodata1    
+     STRING.EEPROM...0x.x...0x.x.12            21FB      17      23       1   .rodata1    
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      2000      29      41       1   .init       
@@ -775,14 +774,14 @@ MODULE:                 -- Start12.c.o --
      __SEG_END_SSTACK                          1114       0       0       1               
 MODULE:                 -- EMBEDDED.C.o (ansisi.lib) --
 - PROCEDURES:
-     printf                                    22C4      13      19      12   .text       
-     fputc                                     22D7       8       8       1   .text       
+     printf                                    22BE      13      19      11   .text       
+     fputc                                     22D1       8       8       1   .text       
 - VARIABLES:
 MODULE:                 -- PRINTF.C.o (ansisi.lib) --
 - PROCEDURES:
-     vprintf                                   22DF     478    1144      49   .text       
-     _out                                      2757       C      12       9   .text       
-     set_printf                                2763       C      12       1   .text       
+     vprintf                                   22D9     478    1144      49   .text       
+     _out                                      2751       C      12       9   .text       
+     set_printf                                275D       C      12       1   .text       
 - VARIABLES:
      pow10                                     203B      28      40       4   .rodata     
      pow16                                     2063      20      32       4   .rodata     
@@ -794,28 +793,29 @@ MODULE:                 -- STDLIB.C.o (ansisi.lib) --
      channels                                  1006       E      14       1   .common     
 MODULE:                 -- TERMINAL.C.o (ansisi.lib) --
 - PROCEDURES:
-     TERM_Write                                276F       3       3       1   .text       
+     TERM_Write                                2769       3       3       1   .text       
 - VARIABLES:
 MODULE:                 -- rtshc12.c.o (ansisi.lib) --
 - PROCEDURES:
-     _LCMP_P                                   283D      15      21       3   RUNTIME     
-     _LNEG                                     2852       D      13       1   RUNTIME     
-     _ILSEXT                                   285F       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         2866       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            286B      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       2882      1A      26       1   RUNTIME     
+     _LCMP_P                                   285F      15      21       3   RUNTIME     
+     _LNEG                                     2874       D      13       1   RUNTIME     
+     _ILSEXT                                   2881       7       7       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         2888       5       5       1   RUNTIME     
+     _CASE_SEARCH_8                            288D      17      23       1   RUNTIME     
+     _CASE_SEARCH_8_BYTE                       28A4      1A      26       1   RUNTIME     
 - VARIABLES:
 MODULE:                 -- i2c.c.o --
 - PROCEDURES:
-     Init_I2C                                  2772      12      18       1   .text       
-     SendSlaveID                               2784      16      22       3   .text       
-     EErandomRead                              279A      49      73       1   .text       
-     EEbyteWrite                               27E3      33      51       1   .text       
-     eeAckPoll                                 2816      1E      30       1   .text       
+     Init_I2C                                  276C      12      18       1   .text       
+     SendSlaveID                               277E      16      22       3   .text       
+     EErandomRead                              2794      49      73       2   .text       
+     EEbyteWrite                               27DD      33      51       2   .text       
+     EEPageWrite                               2810      28      40       1   .text       
+     eeAckPoll                                 2838      1E      30       2   .text       
 - VARIABLES:
 MODULE:                 -- termio.c.o --
 - PROCEDURES:
-     TERMIO_PutChar                            2834       9       9       2   .text       
+     TERMIO_PutChar                            2856       9       9       2   .text       
 - VARIABLES:
 
 *********************************************************************************************
@@ -823,14 +823,14 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12dg256.c.o                            400      0      0
-  main.c.o                                     0    162    371
+  main.c.o                                     0    172    355
   Start12.c.o                                  0     49      0
   EMBEDDED.C.o (ansisi.lib)                    0     27      0
   PRINTF.C.o (ansisi.lib)                      6   1168    116
   STDLIB.C.o (ansisi.lib)                     14      0      0
   TERMINAL.C.o (ansisi.lib)                    0      3      0
   rtshc12.c.o (ansisi.lib)                     0     95      0
-  i2c.c.o                                      0    194      0
+  i2c.c.o                                      0    234      0
   termio.c.o                                   0      9      0
   other                                      256     10      2
 
@@ -839,7 +839,7 @@ SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
   clearscreen main printf fputc vprintf _out set_printf TERM_Write Init_I2C 
-  SendSlaveID EErandomRead EEbyteWrite eeAckPoll TERMIO_PutChar 
+  SendSlaveID EErandomRead EEbyteWrite EEPageWrite eeAckPoll TERMIO_PutChar 
 SECTION: ".bss"
   pbuf 
 SECTION: ".init"
@@ -847,12 +847,11 @@ SECTION: ".init"
 SECTION: ".rodata"
   pow10 pow16 pow8 
 SECTION: ".rodata1"
-  STRING.EE128.LAB.7...2 STRING.I2C.based.EEPROM.Rea.3 
-  STRING......................4 STRING....9S12.will.write.a.5 
-  STRING......................6 STRING.EEPROM.address..0x.x.7 
-  STRING.EEPROM.data.....0x.x.8 STRING....9 STRING......................10 
-  STRING....9S12.will.read.a..11 STRING......................12 
-  STRING.EEPROM...0x.x...0x.x.13 
+  STRING......................2 STRING....9S12.will.write.a.3 
+  STRING......................4 STRING.EEPROM.starting.addr.5 
+  STRING.EEPROM.page.data.....6 STRING....7 STRING......................8 
+  STRING....9S12.will.read.a..9 STRING......................10 
+  STRING.EEPROM...0x.x...0x.x.11 STRING.EEPROM...0x.x...0x.x.12 
 SECTION: ".abs_section_8"
   _PORTE 
 SECTION: ".abs_section_9"
@@ -1892,38 +1891,38 @@ OBJECT LIST SORTED BY ADDRESS
      pow10                                     203B      28      40       4   .rodata     
      pow16                                     2063      20      32       4   .rodata     
      pow8                                      2083      2C      44       4   .rodata     
-     STRING.EE128.LAB.7...2                    20AF       E      14       1   .rodata1    
-     STRING.I2C.based.EEPROM.Rea.3             20BD      27      39       1   .rodata1    
-     STRING......................4             20E4      29      41       1   .rodata1    
-     STRING....9S12.will.write.a.5             210D      29      41       1   .rodata1    
-     STRING......................6             2136      29      41       1   .rodata1    
-     STRING.EEPROM.address..0x.x.7             215F      17      23       1   .rodata1    
-     STRING.EEPROM.data.....0x.x.8             2176      17      23       1   .rodata1    
-     STRING....9                               218D       3       3       1   .rodata1    
-     STRING......................10            2190      2A      42       1   .rodata1    
-     STRING....9S12.will.read.a..11            21BA      27      39       1   .rodata1    
-     STRING......................12            21E1      2A      42       1   .rodata1    
-     STRING.EEPROM...0x.x...0x.x.13            220B      17      23       1   .rodata1    
-     clearscreen                               2222       C      12       1   .text       
-     main                                      222E      96     150       1   .text       
-     printf                                    22C4      13      19      12   .text       
-     fputc                                     22D7       8       8       1   .text       
-     vprintf                                   22DF     478    1144      49   .text       
-     _out                                      2757       C      12       9   .text       
-     set_printf                                2763       C      12       1   .text       
-     TERM_Write                                276F       3       3       1   .text       
-     Init_I2C                                  2772      12      18       1   .text       
-     SendSlaveID                               2784      16      22       3   .text       
-     EErandomRead                              279A      49      73       1   .text       
-     EEbyteWrite                               27E3      33      51       1   .text       
-     eeAckPoll                                 2816      1E      30       1   .text       
-     TERMIO_PutChar                            2834       9       9       2   .text       
-     _LCMP_P                                   283D      15      21       3   RUNTIME     
-     _LNEG                                     2852       D      13       1   RUNTIME     
-     _ILSEXT                                   285F       7       7       2   RUNTIME     
-     _CASE_DIRECT_BYTE                         2866       5       5       1   RUNTIME     
-     _CASE_SEARCH_8                            286B      17      23       1   RUNTIME     
-     _CASE_SEARCH_8_BYTE                       2882      1A      26       1   RUNTIME     
+     STRING......................2             20AF      29      41       1   .rodata1    
+     STRING....9S12.will.write.a.3             20D8      29      41       1   .rodata1    
+     STRING......................4             2101      29      41       1   .rodata1    
+     STRING.EEPROM.starting.addr.5             212A      20      32       1   .rodata1    
+     STRING.EEPROM.page.data.....6             214A      1C      28       1   .rodata1    
+     STRING....7                               2166       3       3       1   .rodata1    
+     STRING......................8             2169      2A      42       1   .rodata1    
+     STRING....9S12.will.read.a..9             2193      27      39       1   .rodata1    
+     STRING......................10            21BA      2A      42       1   .rodata1    
+     STRING.EEPROM...0x.x...0x.x.11            21E4      17      23       1   .rodata1    
+     STRING.EEPROM...0x.x...0x.x.12            21FB      17      23       1   .rodata1    
+     clearscreen                               2212       C      12       1   .text       
+     main                                      221E      A0     160       1   .text       
+     printf                                    22BE      13      19      11   .text       
+     fputc                                     22D1       8       8       1   .text       
+     vprintf                                   22D9     478    1144      49   .text       
+     _out                                      2751       C      12       9   .text       
+     set_printf                                275D       C      12       1   .text       
+     TERM_Write                                2769       3       3       1   .text       
+     Init_I2C                                  276C      12      18       1   .text       
+     SendSlaveID                               277E      16      22       3   .text       
+     EErandomRead                              2794      49      73       2   .text       
+     EEbyteWrite                               27DD      33      51       2   .text       
+     EEPageWrite                               2810      28      40       1   .text       
+     eeAckPoll                                 2838      1E      30       2   .text       
+     TERMIO_PutChar                            2856       9       9       2   .text       
+     _LCMP_P                                   285F      15      21       3   RUNTIME     
+     _LNEG                                     2874       D      13       1   RUNTIME     
+     _ILSEXT                                   2881       7       7       2   RUNTIME     
+     _CASE_DIRECT_BYTE                         2888       5       5       1   RUNTIME     
+     _CASE_SEARCH_8                            288D      17      23       1   RUNTIME     
+     _CASE_SEARCH_8_BYTE                       28A4      1A      26       1   RUNTIME     
 
 *********************************************************************************************
 UNUSED-OBJECTS SECTION
@@ -1959,7 +1958,7 @@ rtshc12.c.o (ansisi.lib):
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0x289C ---- SIZE       2 ---
+------- ROM-ADDRESS: 0x28BE ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1969,13 +1968,13 @@ OBJECT-DEPENDENCIES SECTION
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
 clearscreen               USES channels fputc 
-main                      USES clearscreen STRING.EE128.LAB.7...2 printf 
-                                STRING.I2C.based.EEPROM.Rea.3 STRING......................4 
-                                STRING....9S12.will.write.a.5 STRING......................6 
-                                STRING.EEPROM.address..0x.x.7 STRING.EEPROM.data.....0x.x.8 Init_I2C 
-                                EEbyteWrite eeAckPoll STRING....9 
-                                STRING......................10 STRING....9S12.will.read.a..11 
-                                STRING......................12 EErandomRead STRING.EEPROM...0x.x...0x.x.13 
+main                      USES clearscreen STRING......................2 
+                                printf STRING....9S12.will.write.a.3 
+                                STRING......................4 STRING.EEPROM.starting.addr.5 
+                                STRING.EEPROM.page.data.....6 Init_I2C EEPageWrite eeAckPoll STRING....7 
+                                STRING......................8 STRING....9S12.will.read.a..9 
+                                STRING......................10 EErandomRead STRING.EEPROM...0x.x...0x.x.11 
+                                STRING.EEPROM...0x.x...0x.x.12 
 printf                    USES TERMIO_PutChar set_printf vprintf 
 fputc                     USES TERM_Write 
 vprintf                   USES vprintf _out _CASE_SEARCH_8_BYTE 
@@ -1988,6 +1987,7 @@ Init_I2C                  USES _IBCR _IBFD _IBAD
 SendSlaveID               USES _IBSR _IBCR _IBDR 
 EErandomRead              USES SendSlaveID _IBSR _IBDR _IBCR 
 EEbyteWrite               USES SendSlaveID _IBSR _IBDR _IBCR 
+EEPageWrite               USES EEbyteWrite eeAckPoll 
 eeAckPoll                 USES SendSlaveID _IBCR _IBDR _IBSR 
 
 *********************************************************************************************
@@ -2029,14 +2029,18 @@ DEPENDENCY TREE
  |  |          
  |  +- Init_I2C            
  |  |    
- |  +- EEbyteWrite         
+ |  +- EEPageWrite         
  |  |  | 
- |  |  +- SendSlaveID         
- |  |       
- |  +- eeAckPoll           
- |  |  | 
- |  |  +- SendSlaveID          (see above)
- |  |     
+ |  |  +- EEbyteWrite         
+ |  |  |  | 
+ |  |  |  +- SendSlaveID         
+ |  |  |       
+ |  |  +- eeAckPoll           
+ |  |     | 
+ |  |     +- SendSlaveID          (see above)
+ |  |        
+ |  +- eeAckPoll            (see above)
+ |  |  
  |  +- EErandomRead        
  |     | 
  |     +- SendSlaveID          (see above)
@@ -2054,5 +2058,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 6
-Total size of all blocks to be downloaded: 2206
+Total size of all blocks to be downloaded: 2240
 

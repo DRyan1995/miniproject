@@ -175,11 +175,14 @@ char EEbyteWrite(char ID, char addr, char data)
 char EEPageWrite(char ID, char addr, short page)
 {
     char byte_low, byte_high;
-    byte_low = (char)(0x0f & page);
-    byte_high = (char)(page >> 4);
+    byte_low = (char)(0xff & page);
+    byte_high = (char)(page >> 8);
+    //for testing
+    // printf("%x  %x \r\n",byte_low, byte_high );
     // write the low first
-    EEbyteWrite(ID, addr, byte_low);
-    EEbyteWrite(ID, addr + 0x02, byte_high);
+    EEbyteWrite(ID, addr, byte_high);
+    eeAckPoll(0xA0);            /* make sure internal write operation is complete */
+    EEbyteWrite(ID, addr + 0x04, byte_low);
     return 0;        /* normal write code */
 }
 

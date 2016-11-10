@@ -173,6 +173,10 @@ void loop() {
 }
 
 void Display(){
+  if(unLocked){
+    send_data(0xff, 0x00);
+    return;
+  }
   unsigned char rowData, colData;
   for(int i = 5; i >= 1; i--){
     rowData = ~(1 << (i - 1));
@@ -474,11 +478,17 @@ void stepper_Tick(){
       if (stepperBusy) {
         stepper_state = CLOCKWISE;
       }else{
-        unLocked = 0;
-        stepper_state = READY;
+        delay(10000);// delay sometime and relock
+        stepper_state = COUNTERCLOCKWISE;
       }
     break;
     case COUNTERCLOCKWISE:
+      if (stepperBusy) {
+        stepper_state = COUNTERCLOCKWISE;
+      }else{
+        stepper_state = READY;
+        unLocked = 0;
+      }
     break;
     default:
       stepper_state = stepperInit;
@@ -614,7 +624,7 @@ void StepperSecTask(){
   stepper_Init();
   for(;;){
     stepper_Tick();
-    vTaskDelay(100);
+    vTaskDelay(50);
   }
 }
 

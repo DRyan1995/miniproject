@@ -49,6 +49,9 @@ String content = "btn is pressed!";
 
 // for pattern unlock
 unsigned char displayMatrix[9][6];
+unsigned char destMatrix[9][6];
+unsigned char curX, curY;
+
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -97,15 +100,31 @@ void wifi_setup(){
   delay(200);
 }
 
+void love_init(){
+  displayMatrix[5][5] = 1;
+  displayMatrix[4][4] = 1;
+  displayMatrix[3][3] = 1;
+  displayMatrix[2][2] = 1;
+  displayMatrix[3][1] = 1;
+  displayMatrix[4][1] = 1;
+  displayMatrix[5][2] = 1;
+  displayMatrix[6][1] = 1;
+  displayMatrix[7][1] = 1;
+  displayMatrix[8][2] = 1;
+  displayMatrix[7][3] = 1;
+  displayMatrix[6][4] = 1;
+}
+
 void display_init(){
   for(int i = 0; i <= 8; i++){
     for(int j = 0; j <= 5; j++){
       displayMatrix[i][j] = 0;
     }
   }
-  displayMatrix[2][1] = 1;
-  displayMatrix[3][1] = 1;
-  displayMatrix[3][2] = 1;
+  // love_init();
+  curX = 5;
+  curY = 3;
+  displayMatrix[curX][curY] = 1;
 }
 
 void setup() { // start_up
@@ -122,7 +141,7 @@ void loop() {
 
 void Display(){
   unsigned char rowData, colData;
-  for(int i = 1; i <= 5; i++){
+  for(int i = 5; i >= 1; i--){
     rowData = ~(1 << (i - 1));
     colData = 0;
     for(int j = 1; j <= 8; j++){
@@ -131,7 +150,20 @@ void Display(){
     send_data(rowData, colData);
     send_data(rowData, colData);
     send_data(rowData, colData);
+    // send_data(rowData, colData);
+    send_data(rowData, colData);
   }
+  // for(int i = 1; i <= 5; i++){
+  //   rowData = ~(1 << (i - 1));
+  //   colData = 0;
+  //   for(int j = 1; j <= 8; j++){
+  //     colData += displayMatrix[j][i] * (1 << (j - 1));
+  //   }
+  //   send_data(rowData, colData);
+  //   send_data(rowData, colData);
+  //   // send_data(rowData, colData);
+  // }
+
 }
 
 //this is for shift register
@@ -180,24 +212,72 @@ void a2d_Init(){
   a2d_state = a2dInit;
 }
 
+void MoveLeft(){
+  if (curX == 8) {
+    return;
+  }
+  if (displayMatrix[curX + 1][curY]) {
+    return;
+  }
+  displayMatrix[++curX][curY] = 1;
+}
+
+void MoveRight(){
+  if (curX == 1) {
+    return;
+  }
+  if (displayMatrix[curX - 1][curY]) {
+    return;
+  }
+  displayMatrix[--curX][curY] = 1;
+}
+
+void MoveUp(){
+  if (curY == 1) {
+    return;
+  }
+  if (displayMatrix[curX][curY - 1]) {
+    return;
+  }
+  displayMatrix[curX][--curY] = 1;
+}
+
+void MoveDown(){
+  if (curY == 5) {
+    return;
+  }
+  if (displayMatrix[curX][curY + 1]) {
+    return;
+  }
+  displayMatrix[curX][++curY] = 1;
+}
+
 void send_Tick(){
   switch (send_state) { // actions
     case sendInit:
-      colData = 0x01;
-      rowData = ~0x01;
     break;
     case WAIT:
       // send_data(rowData, colData);
       Display();
     break;
+    case WAIT_RELEASE:
+      Display();
+    break;
     case LEFT:
-
+      MoveLeft();
+      Display();
     break;
     case RIGHT:
+      MoveRight();
+      Display();
     break;
     case UP:
+      MoveUp();
+      Display();
     break;
     case DOWN:
+      MoveDown();
+      Display();
     break;
     default:
     break;
@@ -210,16 +290,34 @@ void send_Tick(){
     case WAIT:
       if (leftPressed) {
         send_state = LEFT;
+      }else if(rightPressed){
+        send_state = RIGHT;
+      }else if(upPressed){
+        send_state = UP;
+      }else if(downPressed){
+        send_state = DOWN;
+      }else{
+        send_state = WAIT;
       }
-      send_state = WAIT;
+    break;
+    case WAIT_RELEASE:
+      if(upPressed | downPressed | leftPressed | rightPressed){
+        send_state = WAIT_RELEASE;
+      }else{
+        send_state = WAIT;
+      }
     break;
     case LEFT:
+      send_state = WAIT_RELEASE;
     break;
     case RIGHT:
+      send_state = WAIT_RELEASE;
     break;
     case UP:
+      send_state = WAIT_RELEASE;
     break;
     case DOWN:
+      send_state = WAIT_RELEASE;
     break;
     default:
       send_state = sendInit;
@@ -234,11 +332,11 @@ void stepper_Tick(){
       stepperBusy = 0;
     break;
     case CLOCKWISE:
-      if(!stepperBusy){
-        stepperBusy = 1;
-        myStepper.step(stepsPerRevolution);
-        stepperBusy = 0;
-      }
+      // if(!stepperBusy){
+      //   stepperBusy = 1;
+      //   myStepper.step(stepsPerRevolution);
+      //   stepperBusy = 0;
+      // }
     break;
     case COUNTERCLOCKWISE:
       if(!stepperBusy){
@@ -374,7 +472,7 @@ void SendSecTask(){
   send_Init();
   for(;;){
     send_Tick();
-    // vTaskDelay(1);
+    vTaskDelay(1);
   }
 }
 

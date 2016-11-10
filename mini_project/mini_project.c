@@ -120,9 +120,23 @@ void des_init(){
   for(int i = 0; i <= 8; i++)
     for(int j = 0; j <= 5; j++)
       destMatrix[i][j] = 0;
-  destMatrix[5][3] = 1;
-  destMatrix[6][3] = 1;
+  // love pattern
+  destMatrix[5][5] = 1;
+  destMatrix[4][4] = 1;
+  destMatrix[3][3] = 1;
+  destMatrix[2][2] = 1;
+  destMatrix[3][1] = 1;
+  destMatrix[4][1] = 1;
+  destMatrix[5][2] = 1;
+  destMatrix[6][1] = 1;
+  destMatrix[7][1] = 1;
+  destMatrix[8][2] = 1;
+  destMatrix[7][3] = 1;
   destMatrix[6][4] = 1;
+  destMatrix[5][3] = 1;
+  //******
+  // destMatrix[5][3] = 1;
+  // destMatrix[5][4] = 1;
 }
 
 int res_compare(){
@@ -553,16 +567,16 @@ void a2d_Tick(){
       // Serial.print(" UD: ");
       // Serial.println(UDValue);
       // ************
-      leftPressed = (LRValue < 90)?1:0;
-      rightPressed = (LRValue > 160)?1:0;
-      downPressed = (UDValue < 90)?1:0;
-      upPressed = (UDValue > 160)?1:0;
+      leftPressed = (LRValue < 103)?1:0;
+      rightPressed = (LRValue > 153)?1:0;
+      downPressed = (UDValue < 103)?1:0;
+      upPressed = (UDValue > 153)?1:0;
       upleftPressed = (leftPressed & upPressed)?1:0;
       uprightPressed = (rightPressed & upPressed)?1:0;
       downleftPressed = (leftPressed & downPressed)?1:0;
       downrightPressed = (rightPressed & downPressed)?1:0;
       // for verifying
-      unLocked = 0;
+
       if(!btnFlag){
         unLocked = res_compare();
         if (unLocked) {

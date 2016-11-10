@@ -47,6 +47,9 @@ short wifiSetting;
 String sendInstruction = "AT+CIPSEND=0,14\r\n";
 String content = "btn is pressed!";
 
+// for pattern unlock
+unsigned char displayMatrix[9][6];
+
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
   pinMode(SERIAL_ROW_PIN, OUTPUT);
@@ -64,7 +67,6 @@ void port_ioval_init(){ //io value init
 void task_init(){
   StartSendSecPulse(1);
   StartUartSecPulse(1);
-  StartBtnSecPulse(1);
   StartStepperSecPulse(1);
   StartA2dSecPulse(1);
   vTaskStartScheduler();
@@ -95,7 +97,19 @@ void wifi_setup(){
   delay(200);
 }
 
+void display_init(){
+  for(int i = 0; i <= 8; i++){
+    for(int j = 0; j <= 5; j++){
+      displayMatrix[i][j] = 0;
+    }
+  }
+  displayMatrix[2][1] = 1;
+  displayMatrix[3][1] = 1;
+  displayMatrix[3][2] = 1;
+}
+
 void setup() { // start_up
+  display_init();
   port_iodr_init();
   port_ioval_init();
   serial_setup();
@@ -104,6 +118,20 @@ void setup() { // start_up
 
 void loop() {
   // nothing here
+}
+
+void Display(){
+  unsigned char rowData, colData;
+  for(int i = 1; i <= 5; i++){
+    rowData = ~(1 << (i - 1));
+    colData = 0;
+    for(int j = 1; j <= 8; j++){
+      colData += displayMatrix[j][i] * (1 << (j - 1));
+    }
+    send_data(rowData, colData);
+    send_data(rowData, colData);
+    send_data(rowData, colData);
+  }
 }
 
 //this is for shift register
@@ -131,18 +159,13 @@ void sendMsg(){
   return;
 }
 
-enum sendState {sendInit, SEND} send_state;
-enum btnState {btnInit, POLLING} btn_state;
+enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN} send_state;
 enum stepperState {stepperInit, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
 enum uartState {uartInit, uartListening} uart_state;
 enum a2dState {a2dInit, a2dListening} a2d_state;
 
 void send_Init(){
   send_state = sendInit;
-}
-
-void btn_Init(){
-  btn_state = btnInit;
 }
 
 void stepper_Init(){
@@ -160,11 +183,21 @@ void a2d_Init(){
 void send_Tick(){
   switch (send_state) { // actions
     case sendInit:
-      colData = 0x09;
-      rowData = ~0x05;
+      colData = 0x01;
+      rowData = ~0x01;
     break;
-    case SEND:
-      send_data(rowData, colData);
+    case WAIT:
+      // send_data(rowData, colData);
+      Display();
+    break;
+    case LEFT:
+
+    break;
+    case RIGHT:
+    break;
+    case UP:
+    break;
+    case DOWN:
     break;
     default:
     break;
@@ -172,46 +205,24 @@ void send_Tick(){
 
   switch (send_state) { // transitions
     case sendInit:
-      send_state = SEND;
+      send_state = WAIT;
     break;
-    case SEND:
-      send_state = SEND;
+    case WAIT:
+      if (leftPressed) {
+        send_state = LEFT;
+      }
+      send_state = WAIT;
+    break;
+    case LEFT:
+    break;
+    case RIGHT:
+    break;
+    case UP:
+    break;
+    case DOWN:
     break;
     default:
       send_state = sendInit;
-    break;
-  }
-}
-
-void btn_Tick(){
-  switch (btn_state) { // actions
-    case btnInit:
-      btnFlag = 0;
-    break;
-    case POLLING:
-      btnFlag = digitalRead(CONFRIM_BTN_PIN);
-      // for testing
-      if(!btnFlag){
-        ++colData;
-        ++rowData;
-        sendMsg();
-        // mySerial.print("fuckyou");
-      }
-    break;
-    default:
-      btnFlag = 0;
-    break;
-  }
-
-  switch (btn_state) { //transitions
-    case btnInit:
-      btn_state = POLLING;
-    break;
-    case POLLING:
-      btn_state = POLLING;
-    break;
-    default:
-      btn_state = btnInit;
     break;
   }
 }
@@ -279,7 +290,7 @@ void uart_Tick(){
           mySerial.write(Serial.read());
       }
       // ***************************
-      // for testing
+
       // if(upPressed){
       //   mySerial.write("UP!\r\n");
       // }
@@ -320,10 +331,17 @@ void a2d_Tick(){
     case a2dListening:
       LRValue = analogRead(LR_INPUT);
       LRValue = map(LRValue, 0, 1023, 0, 255);
-      delay(20);
+      delay(5);
       UDValue = analogRead(UD_INPUT);
       UDValue = map(UDValue, 0, 1023, 0, 255);
-      delay(20);
+      delay(5);
+      btnFlag = digitalRead(CONFRIM_BTN_PIN);
+      // for testing
+      if(!btnFlag){
+        ++colData;
+        ++rowData;
+        sendMsg();
+      }
       // test
       // Serial.print("LR: ");
       // Serial.print(LRValue);
@@ -356,15 +374,7 @@ void SendSecTask(){
   send_Init();
   for(;;){
     send_Tick();
-    vTaskDelay(20);
-  }
-}
-
-void BtnSecTask(){
-  btn_Init();
-  for(;;){
-    btn_Tick();
-    vTaskDelay(5);
+    // vTaskDelay(1);
   }
 }
 
@@ -388,16 +398,12 @@ void A2dSecTask(){
   a2d_Init();
   for(;;){
     a2d_Tick();
-    vTaskDelay(100);
+    vTaskDelay(30);
   }
 }
 
 void StartSendSecPulse(unsigned portBASE_TYPE Priority){
   xTaskCreate(SendSecTask, (signed portCHAR *)"SendSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
-}
-
-void StartBtnSecPulse(unsigned portBASE_TYPE Priority){
-  xTaskCreate(BtnSecTask, (signed portCHAR *)"BtnSecTask", configMINIMAL_STACK_SIZE, NULL, Priority, NULL );
 }
 
 void StartStepperSecPulse(unsigned portBASE_TYPE Priority){

@@ -52,10 +52,13 @@ String content = "Door Unlocked!";
 // for pattern unlock
 unsigned char displayMatrix[9][6];
 unsigned char destMatrix[9][6];
+unsigned char startX, startY;
 unsigned char curX, curY;
 
 // for instruction resolve
-char instructions[10];
+#define INSTRUCTION_LENGTH 17
+char instructions[INSTRUCTION_LENGTH];
+
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -123,6 +126,8 @@ void des_init(){
   for(int i = 0; i <= 8; i++)
     for(int j = 0; j <= 5; j++)
       destMatrix[i][j] = 0;
+  startX = 5;
+  startY = 3;
   // love pattern
   destMatrix[5][5] = 1;
   destMatrix[4][4] = 1;
@@ -151,25 +156,61 @@ int res_compare(){
 }
 
 void instructionPush(char x){
-  instructions[0] = instructions[1];
-  instructions[1] = instructions[2];
-  instructions[2] = instructions[3];
-  instructions[3] = instructions[4];
-  instructions[4] = instructions[5];
-  instructions[5] = instructions[6];
-  instructions[6] = instructions[7];
-  instructions[7] = instructions[8];
-  instructions[8] = instructions[9];
-  instructions[9] = x;
+  int i;
+  for(i = 0; i < INSTRUCTION_LENGTH - 1; i++)
+    instructions[i] = instructions[i + 1];
+  instructions[INSTRUCTION_LENGTH - 1] = x;
+}
+
+int Char2Int(char x){
+  int ret;
+  switch (x) {
+    case 'a':
+      ret = 10;
+    break;
+    case 'b':
+      ret = 11;
+    break;
+    case 'c':
+      ret = 12;
+    break;
+    case 'd':
+      ret = 13;
+    break;
+    case 'e':
+      ret = 14;
+    break;
+    case 'f':
+      ret = 15;
+    break;
+    default:
+      ret = x - '0';
+    break;
+  }
+  return ret;
 }
 
 void instructionHandler(){
-  if (instructions[0] == '*' && instructions[9] == '*') {
-      String unlockInstruction = "*UnlockRy*";
-      String ins = String(instructions);
-      if (unlockInstruction == ins) {
-        Serial.write("FFFF");
+  int i, j, high, low;
+  if (instructions[0] == '*' && instructions[INSTRUCTION_LENGTH - 1] == '*') {
+      if (instructions[1] == 'U' && instructions[2] == 'n' && instructions[3] == 'l') {
+        Serial.write("Door Unlocked");
+        //todo: actions here
+
+      }else if(instructions[1] == 'P' && instructions[2] == 'W' && instructions[3] == 'D'){
+        startX = instructions[4] - '0';
+        startY = instructions[5] - '0';
+        for(i = 1; i <= 5; i++){
+          high = Char2Int(instructions[2 * i + 2]);
+          low = Char2Int(instructions[2 * i + 4]);
+          for(j = 1; j <= 4; j++){
+            destMatrix[i][j] = ( low >> ( j - 1 )) & 0x01;
+            destMatrix[i][j + 4] = ( high >> ( j - 1 ))  & 0x01;
+          }
+        }
+        display_init();
       }
+
   }
 }
 
@@ -180,14 +221,14 @@ void display_init(){
     }
   }
   // love_init();
-  curX = 5;
-  curY = 3;
+  curX = startX;
+  curY = startY;
   displayMatrix[curX][curY] = 1;
 }
 
 void setup() { // start_up
-  display_init();
   des_init();
+  display_init();
   port_iodr_init();
   port_ioval_init();
   serial_setup();

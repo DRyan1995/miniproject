@@ -10,6 +10,16 @@ var lock = new PatternLock('#my-pattern-lock',
       }
 });
 
+function first(myStr) {
+  var originList = myStr.split("-");
+  var row = Math.floor((originList[0] - 1) / 8);
+  var column = (originList[0] - 1) % 8;
+  var data = {};
+  data.x = column;
+  data.y = row;
+  return data;
+}
+
 function stringResolve(myStr) {
   var originList = myStr.split("-");
   var corList = [];
@@ -30,17 +40,15 @@ function stringResolve(myStr) {
   }
   var answers = [];
   for (var i = 0; i < retValues.length; i++) {
-    answers.push(retValues[i].toString(16));
+    var tmp = retValues[i].toString(16);
+    if (tmp.length == 1) {
+      tmp = '0' + tmp;
+    }
+    answers.push(tmp);
   }
-  return answers.join(',');
-}
-
-function first(myStr) {
-  var originList = myStr.split("-");
-  var row = Math.floor((originList[0] - 1) / 8);
-  var column = (originList[0] - 1) % 8;
-  var data = {};
-  data.x = column;
-  data.y = row;
-  return data;
+  answers = answers.join('');
+  var data = first(myStr);
+  data.x = 7 - data.x;
+  data.y += 1;
+  return data.x.toString() + data.y.toString() + answers;
 }

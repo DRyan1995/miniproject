@@ -54,6 +54,9 @@ unsigned char displayMatrix[9][6];
 unsigned char destMatrix[9][6];
 unsigned char curX, curY;
 
+// for instruction resolve
+char instructions[10];
+
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
   pinMode(SERIAL_ROW_PIN, OUTPUT);
@@ -145,6 +148,29 @@ int res_compare(){
       if(destMatrix[i][j] != displayMatrix[i][j])
         return 0;
   return 1;
+}
+
+void instructionPush(char x){
+  instructions[0] = instructions[1];
+  instructions[1] = instructions[2];
+  instructions[2] = instructions[3];
+  instructions[3] = instructions[4];
+  instructions[4] = instructions[5];
+  instructions[5] = instructions[6];
+  instructions[6] = instructions[7];
+  instructions[7] = instructions[8];
+  instructions[8] = instructions[9];
+  instructions[9] = x;
+}
+
+void instructionHandler(){
+  if (instructions[0] == '*' && instructions[9] == '*') {
+      String unlockInstruction = "*UnlockRy*";
+      String ins = String(instructions);
+      if (unlockInstruction == ins) {
+        Serial.write("FFFF");
+      }
+  }
 }
 
 void display_init(){
@@ -529,7 +555,10 @@ void uart_Tick(){
 
       //***************
       if(mySerial.available()){
-        Serial.write(mySerial.read());
+        char tmp = (char)mySerial.read();
+        Serial.write(tmp);
+        instructionPush(tmp);
+        instructionHandler();
       }
     break;
     default:
@@ -569,14 +598,8 @@ void a2d_Tick(){
       UDValue = map(UDValue, 0, 1023, 0, 255);
       delay(2);
       btnFlag = digitalRead(CONFRIM_BTN_PIN);
-      // for testing
 
-      // test
-      // Serial.print("LR: ");
-      // Serial.print(LRValue);
-      // Serial.print(" UD: ");
-      // Serial.println(UDValue);
-      // ************
+      // for joystick
       leftPressed = (LRValue < 103)?1:0;
       rightPressed = (LRValue > 153)?1:0;
       downPressed = (UDValue < 103)?1:0;
@@ -585,8 +608,7 @@ void a2d_Tick(){
       uprightPressed = (rightPressed & upPressed)?1:0;
       downleftPressed = (leftPressed & downPressed)?1:0;
       downrightPressed = (rightPressed & downPressed)?1:0;
-      // for verifying
-
+      // for verifying the pattern
       if(!btnFlag){
         unLocked = res_compare();
         if (unLocked) {

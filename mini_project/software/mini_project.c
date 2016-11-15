@@ -147,6 +147,12 @@ void des_init(){
   // destMatrix[5][4] = 1;
 }
 
+void des_clear(){
+  for(int i = 0; i <= 8; i++)
+    for(int j = 0; j <= 5; j++)
+      destMatrix[i][j] = 0;
+}
+
 int res_compare(){
   for(int i = 1; i <= 8; i++)
     for(int j = 1; j <= 5; j++)
@@ -164,28 +170,10 @@ void instructionPush(char x){
 
 int Char2Int(char x){
   int ret;
-  switch (x) {
-    case 'a':
-      ret = 10;
-    break;
-    case 'b':
-      ret = 11;
-    break;
-    case 'c':
-      ret = 12;
-    break;
-    case 'd':
-      ret = 13;
-    break;
-    case 'e':
-      ret = 14;
-    break;
-    case 'f':
-      ret = 15;
-    break;
-    default:
-      ret = x - '0';
-    break;
+  if (x <= '9') {
+    ret = x - '0';
+  }else{
+    ret = x - 'a' + 10;
   }
   return ret;
 }
@@ -198,15 +186,20 @@ void instructionHandler(){
         //todo: actions here
 
       }else if(instructions[1] == 'P' && instructions[2] == 'W' && instructions[3] == 'D'){
-        startX = instructions[4] - '0';
-        startY = instructions[5] - '0';
+        des_clear();
+        startX = instructions[4] - '0' + 1;
+        startY = instructions[5] - '0' + 1;
         for(i = 1; i <= 5; i++){
-          high = Char2Int(instructions[2 * i + 2]);
-          low = Char2Int(instructions[2 * i + 4]);
-          for(j = 1; j <= 4; j++){
-            destMatrix[i][j] = ( low >> ( j - 1 )) & 0x01;
-            destMatrix[i][j + 4] = ( high >> ( j - 1 ))  & 0x01;
-          }
+          high = Char2Int(instructions[2 * i + 4]);
+          low = Char2Int(instructions[2 * i + 5]);
+            destMatrix[1][i] = ((low & 0x1) == 0x1)?1:0;
+            destMatrix[5][i] = ((high & 0x1) == 0x1)?1:0;
+            destMatrix[2][i] = ((low & 0x2) == 0x2)?1:0;
+            destMatrix[6][i] = ((high & 0x2) == 0x2)?1:0;
+            destMatrix[3][i] = ((low & 0x4) == 0x4)?1:0;
+            destMatrix[7][i] = ((high & 0x4) == 0x4)?1:0;
+            destMatrix[4][i] = ((low & 0x8) == 0x8)?1:0;
+            destMatrix[8][i] = ((high & 0x8) == 0x8)?1:0;
         }
         display_init();
       }
@@ -250,6 +243,7 @@ void Display(){
     colData = 0;
     for(int j = 1; j <= 8; j++){
       colData += displayMatrix[j][i] * (1 << (j - 1));
+      // colData += destMatrix[j][i] * (1 << (j - 1));
     }
     send_data(rowData, colData);
     send_data(rowData, colData);
@@ -259,6 +253,7 @@ void Display(){
     colData = 0;
     for(int j = 1; j <= 8; j++){
       colData += displayMatrix[j][i] * (1 << (j - 1));
+      // colData += destMatrix[j][i] * (1 << (j - 1));
     }
     send_data(rowData, colData);
     send_data(rowData, colData);

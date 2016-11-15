@@ -49,6 +49,5 @@ function stringResolve(myStr) {
   answers = answers.join('');
   var data = first(myStr);
   data.x = 7 - data.x;
-  data.y += 1;
   return data.x.toString() + data.y.toString() + answers;
 }

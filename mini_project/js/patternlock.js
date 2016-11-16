@@ -1,4 +1,4 @@
-var url = "http://192.168.0.201:8008/mp/apis/";
+var url = "http://192.168.0.201:8008/ee128lab/mini_project/apis/";
 
 var lock = new PatternLock('#my-pattern-lock',
     {

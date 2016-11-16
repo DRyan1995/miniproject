@@ -41,7 +41,7 @@ var tcpServer = net.createServer(function(socket) {
   Socket = socket;
 	socket.write('hello from server\r\n');
 	socket.pipe(socket);
-  console.log("client connected");
+  console.log("Arduino connected!");
 });
 
 tcpServer.listen(8888, '0.0.0.0');
@@ -58,8 +58,15 @@ client.connect(9988, '192.168.0.200', function() {
 });
 
 client.on('data', function(data) {
-	console.log('Received: ' + data);
-  receivedMsg = data;
+  data = data.toString();
+	console.log('Nodejs Server Received: ' + data);
+
+  if (data.substring(0, 3) == 'The') {
+    receivedMsg = data;
+  }else{
+    receivedMsg = "Please Try Again!";
+  }
+
 	// client.destroy(); // kill client after server's response
 });
 

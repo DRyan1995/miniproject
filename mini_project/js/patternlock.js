@@ -1,4 +1,4 @@
-var url = "http://192.168.0.201:8008/mp/apis/pwd.php?";
+var url = "http://192.168.0.201:8008/mp/apis/";
 
 var lock = new PatternLock('#my-pattern-lock',
     {
@@ -8,7 +8,7 @@ var lock = new PatternLock('#my-pattern-lock',
       enableSetPattern:true,
       onDraw:function(pattern){
         console.log((stringResolve(lock.getPattern())));
-        $.get(url + 'pwd=' + stringResolve(lock.getPattern()),function (data, status) {
+        $.get(url + 'pwd.php?pwd=' + stringResolve(lock.getPattern()),function (data, status) {
           if (status == "success") {
             console.log(data);
           }
@@ -57,3 +57,11 @@ function stringResolve(myStr) {
   data.x = 7 - data.x;
   return data.x.toString() + data.y.toString() + answers;
 }
+
+$("#btn-relay").click(function () {
+  $.get(url + 'relay.php',function (data, status) {
+    if (status == "success") {
+      console.log(data);
+    }
+  });
+});

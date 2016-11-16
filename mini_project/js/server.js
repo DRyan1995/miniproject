@@ -13,11 +13,16 @@ var server = http.createServer(
           res.end(id);
           if (Socket) {
             var msg = '*PWD' + id + '*';
-            sendMsg(msg);
+            sendMsgToA(msg);
           }else {
             console.log("the socket has not been established!");
           }
-
+        },
+        '/relay':function(req, res) {
+          if (client) {
+            client.write('Ryan');
+            res.end("relay toggled!");
+          }
         }
     })
 );
@@ -34,23 +39,22 @@ var tcpServer = net.createServer(function(socket) {
 
 tcpServer.listen(8888, '0.0.0.0');
 
-function sendMsg(msg) {
+function sendMsgToA(msg) {
   Socket.write(msg);
 	Socket.pipe(Socket);
 }
 
-//
-// var client = new net.Socket();
-// client.connect(8080, '192.168.0.101', function() {
-// 	console.log('Connected');
-// 	client.write('Hello, server! Love, Client.');
-// });
-//
-// client.on('data', function(data) {
-// 	console.log('Received: ' + data);
-// 	client.destroy(); // kill client after server's response
-// });
-//
-// client.on('close', function() {
-// 	console.log('Connection closed');
-// });
+var client = new net.Socket();
+client.connect(9988, '192.168.0.200', function() {
+	console.log('De1-Soc Connected');
+	client.write('Hello from Server');
+});
+
+client.on('data', function(data) {
+	console.log('Received: ' + data);
+	// client.destroy(); // kill client after server's response
+});
+
+client.on('close', function() {
+	console.log('Connection closed');
+});

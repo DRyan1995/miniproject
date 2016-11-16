@@ -1,3 +1,5 @@
+var url = "http://127.0.0.1:8008/mp/apis/pwd.php?";
+
 var lock = new PatternLock('#my-pattern-lock',
     {
       matrix:[5,8],
@@ -6,7 +8,11 @@ var lock = new PatternLock('#my-pattern-lock',
       enableSetPattern:true,
       onDraw:function(pattern){
         console.log((stringResolve(lock.getPattern())));
-        console.log(first(lock.getPattern()));
+        $.get(url + 'pwd=' + stringResolve(lock.getPattern()),function (data, status) {
+          if (status == "success") {
+            console.log(data);
+          }
+        });
       }
 });
 

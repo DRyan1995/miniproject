@@ -65,3 +65,11 @@ $("#btn-relay").click(function () {
     }
   });
 });
+
+$("#btn-tem").click(function () {
+  $.get(url + 'tem.php',function (data, status) {
+    if (status == "success") {
+      window.alert(data);
+    }
+  });
+});

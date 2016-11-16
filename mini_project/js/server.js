@@ -2,6 +2,7 @@ var http = require("http");
 var net = require("net");
 var dispatch = require("./node_modules/dispatch");
 var Socket;
+var receivedMsg;
 
 var server = http.createServer(
     dispatch({
@@ -22,6 +23,12 @@ var server = http.createServer(
           if (client) {
             client.write('Ryan');
             res.end("relay toggled!");
+          }
+        },
+        '/tem':function(req, res) {
+          if (client) {
+            client.write('tem');
+            res.end(receivedMsg);
           }
         }
     })
@@ -52,6 +59,7 @@ client.connect(9988, '192.168.0.200', function() {
 
 client.on('data', function(data) {
 	console.log('Received: ' + data);
+  receivedMsg = data;
 	// client.destroy(); // kill client after server's response
 });
 

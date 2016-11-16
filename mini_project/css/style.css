@@ -12,3 +12,9 @@
 div{
   font-size: 40px;
 }
+
+button{
+  font-size: 40px;
+  display: block;
+  margin: 10px;
+}

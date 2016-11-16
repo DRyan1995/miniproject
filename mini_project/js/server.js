@@ -22,7 +22,8 @@ var server = http.createServer(
     })
 );
 server.listen(8080);
-console.log('Server running at http://127.0.0.1:8080/');
+console.log('HTTP Server running at http://192.168.0.201:8080/');
+console.log('HTTP Server running at http://192.168.0.201:8888/');
 
 var tcpServer = net.createServer(function(socket) {
   Socket = socket;

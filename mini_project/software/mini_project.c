@@ -102,7 +102,7 @@ void wifi_setup(){
   Serial.write(mySerial.read());
   delay(100);
   // mySerial.write("AT+CIPSERVER=1,88888\r\n");
-  mySerial.write("AT+CIPSTART=\"TCP\",\"192.168.0.103\",8888\r\n");
+  mySerial.write("AT+CIPSTART=\"TCP\",\"192.168.0.201\",8888\r\n");
   delay(1000);
   wifiConfigured = 1;
   wifiSetting = 0;

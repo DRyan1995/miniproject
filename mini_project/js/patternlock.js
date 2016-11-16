@@ -1,4 +1,4 @@
-var url = "http://127.0.0.1:8008/mp/apis/pwd.php?";
+var url = "http://192.168.0.201:8008/mp/apis/pwd.php?";
 
 var lock = new PatternLock('#my-pattern-lock',
     {

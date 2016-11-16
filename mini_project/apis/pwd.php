@@ -6,6 +6,6 @@
     echo "nothing";
     exit();
   }
-  $ret_data = file_get_contents("http://localhost:8080/pwd/".$pwd);
+  $ret_data = file_get_contents("http://192.168.0.201:8080/pwd/".$pwd);
   echo $ret_data;
 ?>

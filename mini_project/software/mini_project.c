@@ -542,7 +542,7 @@ void stepper_Tick(){
       if (stepperBusy) {
         stepper_state = CLOCKWISE;
       }else{
-        delay(10000);// delay sometime and relock
+        delay(3000);// delay sometime and relock
         stepper_state = COUNTERCLOCKWISE;
       }
     break;

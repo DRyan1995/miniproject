@@ -15,13 +15,13 @@ var server = http.createServer(
             var msg = '*PWD' + id + '*';
             sendMsgToA(msg);
           }else {
-            console.log("the socket has not been established!");
+            console.log("Arduino Not Connected!");
           }
         },
         '/relay':function(req, res) {
           if (client) {
             client.write('Ryan');
-            res.end("relay toggled!");
+            res.end("relay toggle sent from NODEJS!");
           }
         },
         '/tem':function(req, res) {

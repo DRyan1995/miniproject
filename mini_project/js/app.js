@@ -7,8 +7,8 @@ var lock = new PatternLock('#my-pattern-lock',
       lineOnMove:true,
       enableSetPattern:true,
       onDraw:function(pattern){
-        console.log((stringResolve(lock.getPattern())));
-        $.get(url + 'pwd.php?pwd=' + stringResolve(lock.getPattern()),function (data, status) {
+        console.log((PWDStringResolve(lock.getPattern())));
+        $.get(url + 'pwd.php?pwd=' + PWDStringResolve(lock.getPattern()),function (data, status) {
           if (status == "success") {
             console.log(data);
           }
@@ -26,7 +26,7 @@ function first(myStr) {
   return data;
 }
 
-function stringResolve(myStr) {
+function PWDStringResolve(myStr) {
   var originList = myStr.split("-");
   var corList = [];
   for (var i = 0; i < originList.length; i++) {
@@ -58,6 +58,15 @@ function stringResolve(myStr) {
   return data.x.toString() + data.y.toString() + answers;
 }
 
+$("#btn-delay-time").click(function() {
+  autoLockTime = $("#auto-lock-time-input").val();
+  $.get(url + 'lock_delay.php?delay_time=' + autoLockTime.toString(), function (data, status) {
+    if (status == 'success') {
+      console.log(data);
+    }
+  });
+});
+
 $("#btn-relay").click(function () {
   $.get(url + 'relay.php',function (data, status) {
     if (status == "success") {
@@ -69,7 +78,7 @@ $("#btn-relay").click(function () {
 $("#btn-tem").click(function () {
   $.get(url + 'tem.php',function (data, status) {
     if (status == "success") {
-      window.alert(data);
+      window.alert(data);//display the temperatureData on using alert. stupid!!!
     }
   });
 });

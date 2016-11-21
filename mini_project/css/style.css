@@ -2,12 +2,12 @@
 
 }
 
-#wrapper{
+/*#wrapper{
   position: absolute;
   left: 10%;
   right: 10%;
   top: 30%;
-}
+}*/
 
 div{
   font-size: 40px;
@@ -17,4 +17,11 @@ button{
   font-size: 40px;
   display: block;
   margin: 10px;
+}
+
+input{
+  display: inline;
+  width: 100px;
+  height: 50px;
+  font-size: large;
 }

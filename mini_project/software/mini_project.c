@@ -59,6 +59,12 @@ unsigned char curX, curY;
 #define INSTRUCTION_LENGTH 17
 char instructions[INSTRUCTION_LENGTH];
 
+long autoLockTime = 3000;//3000ms auto-lock time
+
+enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT} send_state;
+enum stepperState {stepperInit, READY, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
+enum uartState {uartInit, uartListening} uart_state;
+enum a2dState {a2dInit, a2dListening} a2d_state;
 
 void port_iodr_init(){ // iodirection init
   pinMode(SERIAL_COL_PIN, OUTPUT);
@@ -205,11 +211,11 @@ void instructionHandler(){
             destMatrix[8][i] = ((high & 0x8) == 0x8)?1:0;
         }
         display_init();
-      }else if(instructions[1] == 'L' && instructions[2] == 'E' && instructions[3] == 'D'){
-        int roomNum = instructions[4] - '0';
-        int brightnessLevel = instructions[5] - '0';
-        //todo: send instrutions to atmega1284
-
+      }else if(instructions[1] == 'D' && instructions[2] == 'E' && instructions[3] == 'L'  && instructions[4] == 'A' && instructions[5] == 'Y'){
+        autoLockTime = 0;
+        for(i = 6; i <= 15; i++){
+          autoLockTime += (instructions[i] - '0') * pow(10, 15-i);
+        }
       }
   }
 }
@@ -291,11 +297,6 @@ void sendMsg(){
   mySerial.print(content);
   return;
 }
-
-enum sendState {sendInit, WAIT, WAIT_RELEASE, LEFT, RIGHT, UP, DOWN, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT} send_state;
-enum stepperState {stepperInit, READY, CLOCKWISE, COUNTERCLOCKWISE} stepper_state;
-enum uartState {uartInit, uartListening} uart_state;
-enum a2dState {a2dInit, a2dListening} a2d_state;
 
 void send_Init(){
   send_state = sendInit;
@@ -513,14 +514,14 @@ void stepper_Tick(){
     case CLOCKWISE:
       if(!stepperBusy){
         stepperBusy = 1;
-        myStepper.step(stepsPerRevolution);
+        myStepper.step(stepsPerRevolution / 2);
         stepperBusy = 0;
       }
     break;
     case COUNTERCLOCKWISE:
       if(!stepperBusy){
         stepperBusy = 1;
-        myStepper.step(-stepsPerRevolution);
+        myStepper.step(-stepsPerRevolution / 2);
         stepperBusy = 0;
       }
     break;
@@ -545,7 +546,7 @@ void stepper_Tick(){
       if (stepperBusy) {
         stepper_state = CLOCKWISE;
       }else{
-        delay(3000);// delay sometime and relock
+        delay(autoLockTime);// delay sometime and relock
         stepper_state = COUNTERCLOCKWISE;
       }
     break;

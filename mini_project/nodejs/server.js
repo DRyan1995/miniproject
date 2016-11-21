@@ -2,7 +2,6 @@ var http = require("http");
 var net = require("net");
 var dispatch = require("./node_modules/dispatch");
 var Socket;
-var receivedMsg;
 
 var server = http.createServer(
     dispatch({
@@ -35,13 +34,18 @@ var server = http.createServer(
 );
 server.listen(8080);
 console.log('HTTP Server running at http://192.168.0.201:8080/');
-console.log('HTTP Server running at http://192.168.0.201:8888/');
 
 var tcpServer = net.createServer(function(socket) {
   Socket = socket;
-	socket.write('hello from server\r\n');
+	socket.write('Hello from NODEJS server!\r\n');
 	socket.pipe(socket);
   console.log("Arduino connected!");
+  socket.on('data', function(data){
+    console.log("NODEJS tcpServer receive from Arduino:" + socket.remoteAddress + ':' + data);
+  });
+  socket.on('close', function(data) {
+    console.log("NODEJS tcpServer closed connection to Arduino" + socket.remoteAddress + ':' + socket.remotePort);
+  });
 });
 
 tcpServer.listen(8888, '0.0.0.0');
@@ -51,25 +55,27 @@ function sendMsgToA(msg) {
 	Socket.pipe(Socket);
 }
 
+console.log('TCP Server running at http://192.168.0.201:8888/');
+
+var temperatureData = "Initializing, Please Try again";
+
 var client = new net.Socket();
-client.connect(9988, '192.168.0.200', function() {
-	console.log('De1-Soc Connected');
-	client.write('Hello from Server');
+  client.connect(9988, '192.168.0.200', function() {
+	console.log('DE1-SOC Connected');
+	client.write('Hello from NODEJS Server');
 });
 
 client.on('data', function(data) {
   data = data.toString();
-	console.log('Nodejs Server Received: ' + data);
-
+	console.log('Msg From DE1-SOC: ' + data);
   if (data.substring(0, 3) == 'The') {
-    receivedMsg = data;
-  }else{
-    receivedMsg = "Please Try Again!";
-  }
+    temperatureData = data;
+  }else if (data == 'CLOSE') {
+    client.destroy(); // kill client after server's response
+  }//todo
 
-	// client.destroy(); // kill client after server's response
 });
 
 client.on('close', function() {
-	console.log('Connection closed');
+	console.log('DE1-SOC Connection closed');
 });

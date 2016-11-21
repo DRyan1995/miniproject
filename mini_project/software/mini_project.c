@@ -186,6 +186,7 @@ void instructionHandler(){
       if (instructions[1] == 'U' && instructions[2] == 'n' && instructions[3] == 'l') {
         Serial.write("Door Unlocked");
         //todo: actions here
+        stepper_state = CLOCKWISE;
 
       }else if(instructions[1] == 'P' && instructions[2] == 'W' && instructions[3] == 'D'){
         des_clear();
@@ -204,8 +205,12 @@ void instructionHandler(){
             destMatrix[8][i] = ((high & 0x8) == 0x8)?1:0;
         }
         display_init();
-      }
+      }else if(instructions[1] == 'L' && instructions[2] == 'E' && instructions[3] == 'D'){
+        int roomNum = instructions[4] - '0';
+        int brightnessLevel = instructions[5] - '0';
+        //todo: send instrutions to atmega1284
 
+      }
   }
 }
 
@@ -259,12 +264,10 @@ void Display(){
     }
     send_data(rowData, colData);
     send_data(rowData, colData);
-    // send_data(rowData, colData);
   }
-
 }
 
-//this is for shift register
+//for shift register
 void send_data(unsigned char rowData, unsigned char colData){
   unsigned char mask;
   digitalWrite(SRCLR_PIN, HIGH); // set SRCLR high
@@ -692,7 +695,6 @@ void UartSecTask(){
   uart_Init();
   for(;;){
     uart_Tick();
-    // vTaskDelay(1);
   }
 }
 
